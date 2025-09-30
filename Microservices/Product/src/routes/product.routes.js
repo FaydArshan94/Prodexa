@@ -8,6 +8,8 @@ const router = express.Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+// POST /api/products
+
 router.post(
   "/",
   createAuthMiddleware(["admin", "seller"]),
@@ -16,6 +18,12 @@ router.post(
   productController.createProduct
 );
 
+
+// GET /api/products
 router.get("/", productController.getProducts);
+
+
+// GET /api/products/:id
+router.get("/:id", productController.getProductById);
 
 module.exports = router;

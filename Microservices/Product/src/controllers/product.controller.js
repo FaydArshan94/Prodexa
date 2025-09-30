@@ -69,4 +69,23 @@ async function getProducts(req, res) {
   });
 }
 
-module.exports = { createProduct, getProducts };
+
+async function getProductById(req, res) {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid product id" });
+  }
+
+  const product = await productModel.findById(id);
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  return res.status(200).json({
+    data: product,
+  });
+}
+
+module.exports = { createProduct, getProducts, getProductById };
