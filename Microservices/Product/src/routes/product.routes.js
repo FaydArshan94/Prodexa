@@ -18,9 +18,11 @@ router.post(
   productController.createProduct
 );
 
-
 // GET /api/products
+
 router.get("/", productController.getProducts);
+
+router.get("/seller", createAuthMiddleware(["seller"]), productController.getProductsBySeller);
 
 
 // GET /api/products/:id
@@ -32,8 +34,6 @@ router.patch(
   upload.array("images", 5),
   productController.updateProduct
 );
-
-
 
 router.delete(
   "/:id",

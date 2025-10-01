@@ -165,21 +165,56 @@ async function deleteProduct(req, res) {
     return res.status(404).json({ message: "Product not found" });
   }
 
-
-
-
   // Only seller who created the product can delete
   if (product.seller.toString() !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "not authorized" });
+    return res.status(403).json({ message: "not authorized" });
   }
 
-  await productModel.findByIdAndDelete({_id: id});
+  await productModel.findByIdAndDelete({ _id: id });
 
   return res.status(200).json({
     message: "successfully deleted",
   });
 }
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
+async function getProductsBySeller(req, res) {
+  const sellerId = req.user.id;
+
+  if (req.user.role !== "seller") {
+    return res.status(403).json({ message: "not authorized" });
+  }
+
+  const { q, minprice, maxprice, skip = 0, limit = 20 } = req.query;
+
+  let filter = {};
+
+  if (q) {
+    filter.title = { $regex: q, $options: "i" };
+  }
+
+  if (minprice) {
+    filter["price.amount"] = { $gte: Number(minprice) };
+  }
+
+  if (maxprice) {
+    filter["price.amount"] = { ...filter["price.amount"], $lte: Number(maxprice) };
+  }
+
+  const products = await productModel
+    .find({ seller: sellerId, ...filter })
+    .skip(Number(skip))
+    .limit(Math.min(Number(limit), 20));
+
+  return res.status(200).json({
+    data: products,
+  });
+}
+
+module.exports = {
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getProductsBySeller,
+};
