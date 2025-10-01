@@ -152,4 +152,34 @@ async function updateProduct(req, res) {
   });
 }
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct };
+async function deleteProduct(req, res) {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid product id" });
+  }
+
+  const product = await productModel.findById(id);
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+
+
+
+  // Only seller who created the product can delete
+  if (product.seller.toString() !== req.user.id) {
+    return res
+      .status(403)
+      .json({ message: "not authorized" });
+  }
+
+  await productModel.findByIdAndDelete({_id: id});
+
+  return res.status(200).json({
+    message: "successfully deleted",
+  });
+}
+
+module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
