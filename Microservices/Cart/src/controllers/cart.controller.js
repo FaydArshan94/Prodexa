@@ -1,5 +1,29 @@
 const cartModel = require("../models/cart.model");
 
+async function getCart(req, res) {
+  const userId = req.user.id; // Extract user ID from authenticated user
+
+  try {
+    let cart = await cartModel.findOne({ user: userId });
+    
+    if (!cart) {
+      return res.status(200).json({ cart: null, message: "Cart is empty" });
+      
+    }
+
+    res.status(200).json({
+      cart,
+      totals: {
+        itemCount: cart.items.length,
+        totalQuantity: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 async function addItemToCart(req, res) {
   try {
     const userId = req.user.id; // Extract user ID from authenticated user
@@ -33,5 +57,6 @@ async function addItemToCart(req, res) {
 }
 
 module.exports = {
+  getCart,
   addItemToCart,
 };

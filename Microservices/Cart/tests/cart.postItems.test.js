@@ -58,8 +58,7 @@ describe('POST /api/cart/items', () => {
         expect(res.body.message).toBe('Item added to cart');
         expect(res.body.cart).toBeDefined();
         expect(res.body.cart.items).toHaveLength(1);
-        console.log(productId);
-        console.log(res.body.cart.items[0]);
+        
         expect(res.body.cart.items[ 0 ]).toMatchObject({ productId, quantity: 2 });
     });
 
