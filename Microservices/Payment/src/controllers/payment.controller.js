@@ -3,6 +3,7 @@ const axios = require("axios");
 
 require("dotenv").config();
 const Razorpay = require("razorpay");
+const { publishToQueue } = require("../broker/broker");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -85,9 +86,23 @@ async function verifyPayment(req, res) {
     await payment.save();
 
 
+    await publishToQueue("PAYMENT.NOTIFICATION_COMPLETED", {
+      username: req.user.username,
+      paymentId: payment._id,
+      orderId: payment.order,
+      userId: payment.user,
+      amount: payment.price.amount,
+      currency: payment.price.currency,
+    });
+
 
   } catch (error) {
     console.log(error);
+    await publishToQueue("PAYMENT.NOTIFICATION_FAILED", {
+      paymentId: paymentId,
+      orderId: razorpayOrderId,
+      username: req.user.username,
+    });
     return res.status(500).json({ message: "Internal server error" });
   }
 }
