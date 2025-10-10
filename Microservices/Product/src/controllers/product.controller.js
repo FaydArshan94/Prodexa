@@ -1,3 +1,6 @@
+const {
+  publishToQueue,
+} = require("../broker/broker");
 const productModel = require("../models/product.model");
 const { uploadImage } = require("../services/imagekit.service");
 const mongoose = require("mongoose");
@@ -23,6 +26,13 @@ async function createProduct(req, res) {
       price,
       seller,
       images,
+    });
+
+    await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_CREATED", product);
+    await publishToQueue("PRODUCT_NOTIFICATION.PRODUCT_CREATED", {
+      email: req.user.email,
+      productId: product._id,
+      username: req.user.username,
     });
 
     return res.status(201).json({
@@ -197,7 +207,10 @@ async function getProductsBySeller(req, res) {
   }
 
   if (maxprice) {
-    filter["price.amount"] = { ...filter["price.amount"], $lte: Number(maxprice) };
+    filter["price.amount"] = {
+      ...filter["price.amount"],
+      $lte: Number(maxprice),
+    };
   }
 
   const products = await productModel
