@@ -1,21 +1,40 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Search, ShoppingCart, User, Menu } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import Link from "next/link";
+import { Search, ShoppingCart, User, Menu, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../lib/redux/actions/authActions";
+import { use, useEffect } from "react";
 
 export default function Navbar() {
+  const auth = useSelector((state) => state.auth);
+
+
+
+
+
+  const dispatch = useDispatch();
+
+
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white">
       {/* Top Bar */}
       <div className="border-b bg-slate-50">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
           <div className="flex gap-4">
-            <Link href="/seller" className="text-slate-600 hover:text-slate-900">
+            <Link
+              href="/seller"
+              className="text-slate-600 hover:text-slate-900"
+            >
               Become a Seller
             </Link>
-            <Link href="/track-order" className="text-slate-600 hover:text-slate-900">
+            <Link
+              href="/track-order"
+              className="text-slate-600 hover:text-slate-900"
+            >
               Track Order
             </Link>
           </div>
@@ -52,10 +71,32 @@ export default function Navbar() {
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
             {/* Login Button */}
-            <Button variant="ghost" className="gap-2">
-              <User className="h-5 w-5" />
-              <Link href="/login" className="hidden md:inline">Login</Link>
-            </Button>
+            {!auth.isAuthenticated ? (
+              <Button variant="ghost" className="gap-2">
+                <User className="h-5 w-5" />
+                <span className="hidden md:inline">
+                  <Link href="/login">Login</Link>
+                </span>
+              </Button>
+            ) : (
+              <div>
+                <Button variant="ghost" className="gap-2">
+                  <User className="h-5 w-5" />
+                  <span className="hidden md:inline">
+                    <Link href="/profile">{auth.user?.username}</Link>
+                  </span>
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    dispatch(logoutUser());
+                  }}
+                  variant="ghost" className="text-center">
+                  <LogOut className="h-5 w-5" />
+                  
+                </Button>
+              </div>
+            )}
 
             {/* Cart Button */}
             <Button variant="ghost" className="gap-2 relative">
@@ -78,7 +119,15 @@ export default function Navbar() {
 
         {/* Categories Bar */}
         <div className="mt-4 flex gap-6 overflow-x-auto pb-2">
-          {['Electronics', 'Fashion', 'Home & Kitchen', 'Beauty', 'Sports', 'Books', 'Toys'].map((category) => (
+          {[
+            "Electronics",
+            "Fashion",
+            "Home & Kitchen",
+            "Beauty",
+            "Sports",
+            "Books",
+            "Toys",
+          ].map((category) => (
             <Link
               key={category}
               href={`/category/${category.toLowerCase()}`}
@@ -90,5 +139,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

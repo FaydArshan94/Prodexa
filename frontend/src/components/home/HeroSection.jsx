@@ -1,9 +1,27 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { fetchCurrentUser } from "@/lib/redux/actions/authActions";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function HeroSection() {
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+
+  const getUser = async () => {
+    try {
+      const response = await dispatch(fetchCurrentUser()).unwrap();
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-20 md:py-32">
@@ -13,7 +31,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              <span>New Collection 2024</span>
+              <span>New Collection 2024 for {auth.user?.username}</span>
             </div>
 
             {/* Main Heading */}
@@ -25,7 +43,8 @@ export default function HeroSection() {
 
             {/* Description */}
             <p className="text-lg text-slate-600 leading-relaxed">
-              Discover amazing products from trusted sellers. Get the best deals on electronics, fashion, home essentials and more.
+              Discover amazing products from trusted sellers. Get the best deals
+              on electronics, fashion, home essentials and more.
             </p>
 
             {/* CTA Buttons */}
@@ -100,5 +119,5 @@ export default function HeroSection() {
         <div className="absolute bottom-20 right-40 w-96 h-96 bg-purple-400 rounded-full blur-3xl"></div>
       </div>
     </section>
-  )
+  );
 }
