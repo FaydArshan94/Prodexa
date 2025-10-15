@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const productSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -24,6 +25,7 @@ const productSchema = new mongoose.Schema({
   seller: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: "user",
   },
   images: [
     {
@@ -40,6 +42,8 @@ const productSchema = new mongoose.Schema({
 
 productSchema.index({ title: "text", description: "text" });
 
+
 const Product = mongoose.model("product", productSchema);
+
 
 module.exports = Product;

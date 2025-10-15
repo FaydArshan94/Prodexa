@@ -1,9 +1,8 @@
-const {
-  publishToQueue,
-} = require("../broker/broker");
+const { publishToQueue } = require("../broker/broker");
 const productModel = require("../models/product.model");
 const { uploadImage } = require("../services/imagekit.service");
 const mongoose = require("mongoose");
+const axios = require("axios");
 
 // Accepts multipart/form-data with fields: title, description, priceAmount, priceCurrency, images[] (files)
 async function createProduct(req, res) {
@@ -92,8 +91,24 @@ async function getProductById(req, res) {
     return res.status(404).json({ message: "Product not found" });
   }
 
+
+  // ✅ Fetch seller details from USER MICROSERVICE
+  let sellerDetails = null;
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/api/auth/users/${product.seller}`
+    );
+    sellerDetails = response.data;
+  } catch (error) {
+    console.error("Failed to fetch user details:", error.message);
+    // Continue execution with null seller details
+  }
+
   return res.status(200).json({
-    data: product,
+    data: {
+      ...product.toObject(),
+      seller: sellerDetails || null, // fallback if user service unavailable
+    },
   });
 }
 

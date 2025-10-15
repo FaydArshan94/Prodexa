@@ -1,11 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit'
-import authReducer from './slices/authSlice'
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./slices/authSlice";
+import productsReducer from "./slices/productSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    // Add more reducers here as you build them
-    // products: productsReducer,
+    products: productsReducer,
     // cart: cartReducer,
     // orders: ordersReducer,
   },
@@ -13,6 +13,6 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }),
-})
+});
 
-export default store
+export default store;

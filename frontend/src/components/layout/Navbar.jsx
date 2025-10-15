@@ -5,17 +5,18 @@ import { Search, ShoppingCart, User, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../../lib/redux/actions/authActions";
+import { logoutUser, fetchCurrentUser } from "../../lib/redux/actions/authActions";
 import { use, useEffect } from "react";
 
 export default function Navbar() {
   const auth = useSelector((state) => state.auth);
-
-
-
-
-
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!auth.user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [dispatch, auth.user]);
 
 
 

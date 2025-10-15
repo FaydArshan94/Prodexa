@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { fetchCurrentUser } from "@/lib/redux/actions/authActions";
+import { fetchProducts } from "@/lib/redux/actions/productActions";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 export default function HeroSection() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const products = useSelector((state) => state.products);
 
   const getUser = async () => {
     try {
@@ -20,8 +22,11 @@ export default function HeroSection() {
 
   useEffect(() => {
     getUser();
+    fetchProducts()
   }, []);
 
+
+  
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-20 md:py-32">

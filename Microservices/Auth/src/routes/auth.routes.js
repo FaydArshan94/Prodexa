@@ -18,4 +18,6 @@ router.post("/users/me/addresses", authMiddleware.authMiddleware, authController
 router.delete("/users/me/addresses/:addressId", authMiddleware.authMiddleware, authController.deleteUserAddress);
 
 
+router.get("/users/:id", authController.getUserById);
+
 module.exports = router;

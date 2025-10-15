@@ -9,15 +9,15 @@ import { Star, ShoppingCart, Heart } from 'lucide-react'
 export default function ProductCard({ product }) {
   return (
     <Card className="group cursor-pointer hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 hover:border-blue-200">
-      <Link href={`/products/${product.id}`}>
+      <Link href={`/products/${product?._id}`}>
         {/* Product Image */}
         <div className="relative bg-slate-50 aspect-square flex items-center justify-center overflow-hidden">
           {/* Discount Badge */}
-          {product.discount && (
+          {/* {product.discount && (
             <Badge className="absolute top-3 left-3 z-10 bg-red-500">
               {product.discount}
             </Badge>
-          )}
+          )} */}
           
           {/* Wishlist Button */}
           <button 
@@ -32,27 +32,35 @@ export default function ProductCard({ product }) {
 
           {/* Product Image/Emoji */}
           <div className="text-8xl group-hover:scale-110 transition-transform duration-300">
-            {product.image}
+            {product?.images && product?.images?.length > 0 ? (
+              <img 
+                src={product?.images[0]?.url}
+                alt={product?.title}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className="text-8xl">{product?.title}</div>
+            )}
           </div>
 
           {/* Product Badge */}
-          {product.badge && (
+          {/* {product.badge && (
             <Badge 
               variant="secondary" 
               className="absolute bottom-3 left-3"
             >
               {product.badge}
             </Badge>
-          )}
+          )} */}
         </div>
       </Link>
 
       {/* Product Info */}
       <div className="p-4 space-y-3">
         {/* Product Name */}
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/products/${product?._id}`}>
           <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
-            {product.name}
+            {product?.title}
           </h3>
         </Link>
 
@@ -60,25 +68,25 @@ export default function ProductCard({ product }) {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded">
             <Star className="h-3 w-3 fill-green-600 text-green-600" />
-            <span className="text-sm font-semibold text-green-600">
+            {/* <span className="text-sm font-semibold text-green-600">
               {product.rating}
-            </span>
+            </span> */}
           </div>
-          <span className="text-sm text-slate-500">
+          {/* <span className="text-sm text-slate-500">
             ({product.reviews})
-          </span>
+          </span> */}
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold text-slate-900">
-            ₹{product.price}
+            ₹{product?.price?.amount || product?.price || 0}
           </span>
-          {product.originalPrice && (
+          {/* {product.originalPrice && (
             <span className="text-sm text-slate-400 line-through">
               ₹{product.originalPrice}
             </span>
-          )}
+          )} */}
         </div>
 
         {/* Add to Cart Button */}

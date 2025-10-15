@@ -3,7 +3,7 @@ import axios from 'axios'
 // Base URLs for different services
 export const API_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_API || 'http://localhost:3000',
-  product: process.env.NEXT_PUBLIC_PRODUCT_API || 'http://localhost:3002',
+  product: process.env.NEXT_PUBLIC_PRODUCT_API || 'http://localhost:3001/api/products',
   cart: process.env.NEXT_PUBLIC_CART_API || 'http://localhost:3003',
   order: process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:3004',
   payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'http://localhost:3005',
