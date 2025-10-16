@@ -1,12 +1,20 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Star, ShoppingCart, Heart } from 'lucide-react'
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Star, ShoppingCart, Heart } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../lib/redux/actions/cartActions";
 
 export default function ProductCard({ product }) {
+  const dispatch = useDispatch();
+
+  const handleAddToCart = async (productId) => {
+    await dispatch(addToCart(productId));
+  };
+
   return (
     <Card className="group cursor-pointer hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 hover:border-blue-200">
       <Link href={`/products/${product?._id}`}>
@@ -18,11 +26,11 @@ export default function ProductCard({ product }) {
               {product.discount}
             </Badge>
           )} */}
-          
+
           {/* Wishlist Button */}
-          <button 
+          <button
             onClick={(e) => {
-              e.preventDefault()
+              e.preventDefault();
               // Add to wishlist logic
             }}
             className="absolute top-3 right-3 z-10 bg-white rounded-full p-2 shadow-md hover:bg-red-50 hover:text-red-500 transition-colors"
@@ -33,7 +41,7 @@ export default function ProductCard({ product }) {
           {/* Product Image/Emoji */}
           <div className="text-8xl group-hover:scale-110 transition-transform duration-300">
             {product?.images && product?.images?.length > 0 ? (
-              <img 
+              <img
                 src={product?.images[0]?.url}
                 alt={product?.title}
                 className="object-cover w-full h-full"
@@ -90,10 +98,11 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* Add to Cart Button */}
-        <Button 
+        <Button
           onClick={(e) => {
-            e.preventDefault()
-            // Add to cart logic
+            // e.preventDefault();
+            handleAddToCart(product._id);
+
           }}
           className="w-full gap-2 group-hover:bg-blue-600 transition-colors"
           size="sm"
@@ -103,5 +112,5 @@ export default function ProductCard({ product }) {
         </Button>
       </div>
     </Card>
-  )
+  );
 }

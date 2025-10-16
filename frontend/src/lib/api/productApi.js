@@ -4,7 +4,7 @@ import { productApi } from './axiosConifg'
 // params: { q, minprice, maxprice, skip, limit }
 export const getAllProducts = async (params = {}) => {
   try {
-    const response = await productApi.get('/')
+    const response = await productApi.get('/', { params })
     return response.data // { message, data }
   } catch (error) {
     throw error.response?.data || { message: 'Failed to fetch products' }

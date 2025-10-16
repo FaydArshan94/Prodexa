@@ -5,10 +5,9 @@ async function getCart(req, res) {
 
   try {
     let cart = await cartModel.findOne({ user: userId });
-    
+
     if (!cart) {
       return res.status(200).json({ cart: null, message: "Cart is empty" });
-      
     }
 
     res.status(200).json({
@@ -55,7 +54,6 @@ async function addItemToCart(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
-
 
 async function updateCartItem(req, res) {
   try {

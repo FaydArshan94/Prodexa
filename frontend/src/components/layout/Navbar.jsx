@@ -100,16 +100,16 @@ export default function Navbar() {
             )}
 
             {/* Cart Button */}
-            <Button variant="ghost" className="gap-2 relative">
+            <Link  href="/cart" variant="ghost" className="gap-2 relative">
               <ShoppingCart className="h-5 w-5" />
               <span className="hidden md:inline">
-                <Link href="/cart">Cart</Link>
+                <span>Cart</span>
               </span>
               {/* Cart Count Badge */}
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
                 3
               </span>
-            </Button>
+            </Link>
 
             {/* Mobile Menu */}
             <Button variant="ghost" className="md:hidden">
