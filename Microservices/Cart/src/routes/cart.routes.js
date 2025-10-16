@@ -12,4 +12,7 @@ router.post("/items", createCartValidation, createAuthMiddleware(["user"]), cart
 
 router.patch("/items/:productId", updateCartItemValidation, createAuthMiddleware(["user"]), cartController.updateCartItem);
 
+router.delete("/items/:productId", createAuthMiddleware(["user"]), cartController.removeItemFromCart);
+
+
 module.exports = router;

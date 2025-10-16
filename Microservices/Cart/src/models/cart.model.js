@@ -13,13 +13,24 @@ const cartSchema = new mongoose.Schema(
           required: true,
         },
         quantity: { type: Number, required: true, min: 1 },
+        
+        // Product snapshot - stored at time of adding to cart
+        productSnapshot: {
+          title: { type: String, required: true },
+          price: { type: Number, required: true },
+          image: { type: String, required: true },
+          stock: { type: Number },
+          discountPrice: { type: Number },
+        },
+        
+        // Track when this was added/last updated
+        addedAt: { type: Date, default: Date.now },
+        priceAtAdd: { type: Number }, // Original price when added
       },
     ],
   },
   { timestamps: true }
 );
-
-
 
 const Cart = mongoose.model("cart", cartSchema);
 

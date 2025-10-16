@@ -10,6 +10,10 @@ import { use, useEffect } from "react";
 
 export default function Navbar() {
   const auth = useSelector((state) => state.auth);
+  const { cart = [], isLoading, totals } = useSelector((state) => state.cart);
+
+
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -107,7 +111,7 @@ export default function Navbar() {
               </span>
               {/* Cart Count Badge */}
               <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
-                3
+                {cart.length || 0}
               </span>
             </Link>
 

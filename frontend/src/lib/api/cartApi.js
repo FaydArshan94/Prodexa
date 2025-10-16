@@ -1,22 +1,23 @@
+import axios from "axios";
 import { cartApi } from "./axiosConifg";
 
-export const addToCart = async (productId, quantity = 1) => {
-  try {
-    const response = await cartApi.post("/items", { productId, quantity });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    throw error;
-  }
+export const addToCart = async (cartData) => {
+  const response = await cartApi.post("/items", cartData);
+  return response.data;
+};
+
+export const getCart = async () => {
+  const response = await cartApi.get("/");
+  return response.data;
 };
 
 
-export const getCart = async () => {
-  try {
-    const response = await cartApi.get("/");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching cart:", error);
-    throw error;
-  }
+export const updateCartQuantity = async (productId, quantity) => {
+  const response = await cartApi.patch(`/items/${productId}`, { quantity });
+  return response.data;
+};
+
+export const removeFromCart = async (productId) => {
+  const response = await cartApi.delete(`/items/${productId}`);
+  return response.data;
 };

@@ -30,6 +30,7 @@ import { fetchProductById } from "@/lib/redux/actions/productActions";
 import ImageEffect from "@/components/products/ImageEffect";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
+import { addToCart } from "../../../lib/redux/actions/cartActions";
 
 // Mock product data (in real app, fetch from API)
 // const getProduct = (id) => {
@@ -165,6 +166,33 @@ export default function ProductDetailPage() {
   useEffect(() => {
     dispatch(fetchProductById(id));
   }, [dispatch, id]);
+
+  const handleAddToCart = async () => {
+    try {
+      await dispatch(
+        addToCart({
+          productId: params.id,
+          quantity: 1,
+          product: {
+            title: product.title,
+            price: product.price?.amount || product.price,
+            image:
+              product.image || product.images?.[0].url || "/placeholder.jpg",
+            stock: product.stock || 0,
+            discountPrice:
+              product.discountPrice?.amount || product.discountPrice,
+          },
+
+          
+        }),
+
+        console.log("Added to cart")
+      ).unwrap();
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      console.log(error || "Failed to add to cart");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -363,6 +391,7 @@ export default function ProductDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <Button
+                onClick={handleAddToCart}
                 size="lg"
                 className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
               >
