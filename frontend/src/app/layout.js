@@ -19,6 +19,16 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      </head>
+      <body>
+        <ReduxProvider>{children}</ReduxProvider>
+      </body>
+    </html>
+  );
+  return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

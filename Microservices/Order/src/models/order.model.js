@@ -55,7 +55,28 @@ const orderSchema = new mongoose.Schema(
       type: addressSchema,
       required: true,
     },
-
+    paymentMethod: {
+      type: {
+        type: String,
+        required: true,
+        enum: ["COD", "RAZORPAY"],
+      },
+      details: {
+        method: {
+          type: String,
+          enum: ["card", "upi", "netbanking", null],
+          default: null,
+        },
+        last4: {
+          type: String,
+          default: null,
+        },
+        bank: {
+          type: String,
+          default: null,
+        },
+      },
+    },
     cancellationReason: { type: String, minlength: 10, maxlength: 500, default: null },
     cancelledAt: { type: Date, default: null },
   },

@@ -50,3 +50,16 @@ export const removeFromCart = createAsyncThunk(
     }
   }
 );
+
+
+export const clearCart = createAsyncThunk(
+  '/clearCart',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await cartApi.clearCart();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed');
+    }
+  }
+);

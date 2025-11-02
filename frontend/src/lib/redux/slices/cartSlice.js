@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { addToCart, fetchCart, removeFromCart } from '../actions/cartActions'
+import { addToCart, fetchCart, removeFromCart,clearCart } from '../actions/cartActions'
+
 
 const initialState = {
   cart: [],
@@ -90,6 +91,20 @@ const cartSlice = createSlice({
           state.isLoading = false;
           state.error = action.error.message;
         })
+
+
+        .addCase(clearCart.pending, (state) => {
+          state.isLoading = true;
+        })
+        .addCase(clearCart.fulfilled, (state) => {
+          state.isLoading = false;
+          state.cart = [];
+          state.totals = { itemCount: 0, totalQuantity: 0 };
+        })
+        .addCase(clearCart.rejected, (state, action) => {
+          state.isLoading = false;
+          state.error = action.error.message;
+        });
 
     },
 })

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/products/ProductCard";
@@ -188,6 +188,36 @@ export default function ProductDetailPage() {
 
         console.log("Added to cart")
       ).unwrap();
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      console.log(error || "Failed to add to cart");
+    }
+  };
+
+
+  const router = useRouter();
+
+  const handleBuyNow = async () => {
+    try {
+      // First add the item to cart
+      await dispatch(
+        addToCart({
+          productId: params.id,
+          quantity: quantity,
+          product: {
+            title: product.title,
+            price: product.price?.amount || product.price,
+            image: product.image || product.images?.[0].url || "/placeholder.jpg",
+            stock: product.stock || 0,
+            discountPrice: product.discountPrice?.amount || product.discountPrice,
+          },
+        })
+      ).unwrap();
+      
+      // Then redirect to checkout
+      router.push('/checkout');
+
+      console.log("Added to cart");
     } catch (error) {
       console.error("Add to cart error:", error);
       console.log(error || "Failed to add to cart");
@@ -408,6 +438,7 @@ export default function ProductDetailPage() {
 
             {/* Buy Now Button */}
             <Button
+            onClick={handleBuyNow}
               size="lg"
               className="w-full bg-orange-500 hover:bg-orange-600"
             >

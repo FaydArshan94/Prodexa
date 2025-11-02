@@ -14,5 +14,6 @@ router.patch("/items/:productId", updateCartItemValidation, createAuthMiddleware
 
 router.delete("/items/:productId", createAuthMiddleware(["user"]), cartController.removeItemFromCart);
 
+router.delete("/clearCart", createAuthMiddleware(["user"]), cartController.clearCart);
 
 module.exports = router;

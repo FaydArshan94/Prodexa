@@ -48,7 +48,6 @@ async function createPayment(req, res) {
     return res.status(500).json({ error: "Internal server error" });
   }
 }
-
 async function verifyPayment(req, res) {
   const { razorpayOrderId, paymentId, signature } = req.body;
 
@@ -72,39 +71,55 @@ async function verifyPayment(req, res) {
       return res.status(400).json({ message: "Invalid payment signature" });
     }
 
-    const payment = await paymentModel.findOne({razorpayOrderId,status: "Pending",});
+    const payment = await paymentModel.findOne({
+      razorpayOrderId,
+      status: "PENDING",
+    });
 
     if (!payment) {
-      return res.status(404).json({ message: "Payment not found " });
+      return res.status(404).json({ message: "Payment not found" });
     }
 
     payment.razorpayPaymentId = paymentId;
-    payment.status = "Completed";
+    payment.status = "COMPLETED";
     payment.signature = signature;
 
-    
     await payment.save();
 
-
-    await publishToQueue("PAYMENT.NOTIFICATION_COMPLETED", {
+    // Publish to queue (don't await if you don't want to block)
+    publishToQueue("PAYMENT.NOTIFICATION_COMPLETED", {
       username: req.user.username,
       paymentId: payment._id,
       orderId: payment.order,
       userId: payment.user,
       amount: payment.price.amount,
       currency: payment.price.currency,
+    }).catch((err) => console.error("Queue publish error:", err));
+
+    // ✅ ADD THIS - Send success response
+    return res.status(200).json({
+      success: true,
+      message: "Payment verified successfully",
+      payment: {
+        id: payment._id,
+        status: payment.status,
+        orderId: payment.order,
+      },
     });
-
-
   } catch (error) {
     console.log(error);
-    await publishToQueue("PAYMENT.NOTIFICATION_FAILED", {
+
+    // Publish failure notification (don't block on this either)
+    publishToQueue("PAYMENT.NOTIFICATION_FAILED", {
       paymentId: paymentId,
       orderId: razorpayOrderId,
       username: req.user.username,
+    }).catch((err) => console.error("Queue publish error:", err));
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
-    return res.status(500).json({ message: "Internal server error" });
   }
 }
-
 module.exports = { createPayment, verifyPayment };

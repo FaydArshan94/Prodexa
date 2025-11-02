@@ -8,11 +8,18 @@ async function createOrder(req, res) {
   const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
 
   try {
-    const cartResponse = await axios.get("http://localhost:3002/api/cart", {
+    const cartResponse = await axios.get("http://localhost:3002/api/cart/", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (!cartResponse.data.cart) {
+      return res.status(400).json({
+        success: false,
+        message: "Cart is empty or not found",
+      });
+    }
 
     const products = await Promise.all(
       cartResponse.data.cart.items.map(async (item) => {
@@ -46,6 +53,7 @@ async function createOrder(req, res) {
         product: {
           _id: product._id,
           title: product.title,
+          image: product.images[0],
         },
         productId: item.productId,
         quantity: item.quantity,
@@ -56,6 +64,11 @@ async function createOrder(req, res) {
         total: itemTotal,
       };
     });
+
+    // Validate payment method
+    if (!req.body.paymentMethod || !req.body.paymentMethod.type) {
+      return res.status(400).json({ message: "Payment method is required" });
+    }
 
     const order = await orderModel.create({
       user: user.id,
@@ -73,9 +86,21 @@ async function createOrder(req, res) {
         pincode: req.body.shippingAddress.pincode,
         country: req.body.shippingAddress.country,
       },
+      paymentMethod: {
+        type: req.body.paymentMethod.type, // 'COD' or 'RAZORPAY'
+        details: req.body.paymentMethod.type === 'RAZORPAY' ? {
+          method: req.body.paymentMethod.details?.method, // 'card', 'upi', 'netbanking'
+          last4: req.body.paymentMethod.details?.last4, // Last 4 digits if card
+          bank: req.body.paymentMethod.details?.bank, // Bank name if applicable
+        } : null
+      },
     });
 
-
+    await axios.delete("http://localhost:3002/api/cart/clearCart", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     publishToQueue("ORDER_SELLER_DASHBOARD.ORDER_CREATED", order);
 
@@ -212,17 +237,19 @@ async function cancelOrder(req, res) {
         .status(403)
         .json({ message: "Not authorized to cancel this order" });
 
-
     if (order.status === "Cancelled")
       return res.status(400).json({ message: "Order is already cancelled" });
 
-
     if (order.status !== "Pending") {
-      return res.status(400).json({ message: "Order cannot be cancelled in current status" });
+      return res
+        .status(400)
+        .json({ message: "Order cannot be cancelled in current status" });
     }
 
-    if(reason.length > 500) {
-      return res.status(400).json({ message: "Cancellation reason is too long" });
+    if (reason.length > 500) {
+      return res
+        .status(400)
+        .json({ message: "Cancellation reason is too long" });
     }
 
     order.cancellationReason = reason;
