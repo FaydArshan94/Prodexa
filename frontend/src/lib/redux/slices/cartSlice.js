@@ -24,7 +24,7 @@ const cartSlice = createSlice({
     },
     updateQuantityOptimistic: (state, action) => {
       const { productId, quantity } = action.payload;
-      const item = state.cart.find(item => item.productId === productId);
+      const item = state.cart.find((item) => item.productId === productId);
       if (item) {
         item.quantity = quantity;
         // Update totals
@@ -33,13 +33,13 @@ const cartSlice = createSlice({
     },
     removeItemOptimistic: (state, action) => {
       const { productId } = action.payload;
-      state.cart = state.cart.filter(item => item.productId !== productId);
+      state.cart = state.cart.filter((item) => item.productId !== productId);
       // Update totals
       state.totals.itemCount = state.cart.length;
       state.totals.totalQuantity = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-    }
+    },
   },
-    extraReducers: (builder) => {
+  extraReducers: (builder) => {
       builder
         .addCase(addToCart.pending, (state) => {
           state.isLoading = true

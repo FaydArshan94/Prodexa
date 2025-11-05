@@ -45,37 +45,47 @@ async function createProduct(req, res) {
 }
 
 async function getProducts(req, res) {
-  const { q, minprice, maxprice, skip = 0, limit = 20 } = req.query;
+  try {
+    // Extract query parameters
+    const { q, minprice, maxprice, skip = 0, limit = 20 } = req.query;
 
-  const filter = {};
+    // Build Mongo filter object dynamically
+    const filter = {};
 
-  if (q) {
-    filter.$text = { $search: q };
+    // --- TEXT SEARCH ---
+    if (q && q.trim()) {
+      filter.$text = { $search: q.trim() };
+    }
+
+    // --- PRICE FILTERS ---
+    if (minprice || maxprice) {
+      filter["price.amount"] = {};
+
+      if (minprice && !isNaN(minprice)) {
+        filter["price.amount"].$gte = Number(minprice);
+      }
+
+      if (maxprice && !isNaN(maxprice)) {
+        filter["price.amount"].$lte = Number(maxprice);
+      }
+    }
+
+    // --- QUERY EXECUTION ---
+    const products = await productModel
+      .find(filter)
+      .skip(Number(skip))
+      .limit(Math.min(Number(limit), 50)) // safety cap
+      .lean(); // better performance
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching products:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-
-  if (minprice) {
-    filter["price.amount"] = {
-      ...filter["price.amount"],
-      $gte: Number(minprice),
-    };
-  }
-
-  if (maxprice) {
-    filter["price.amount"] = {
-      ...filter["price.amount"],
-      $lte: Number(maxprice),
-    };
-  }
-
-  const products = await productModel
-    .find(filter)
-    .skip(skip)
-    .limit(Math.min(limit, 20));
-
-  return res.status(200).json({
-    message: "Products retrieved",
-    data: products,
-  });
 }
 
 async function getProductById(req, res) {
@@ -90,7 +100,6 @@ async function getProductById(req, res) {
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
-
 
   // ✅ Fetch seller details from USER MICROSERVICE
   let sellerDetails = null;
@@ -238,6 +247,44 @@ async function getProductsBySeller(req, res) {
   });
 }
 
+async function searchProducts(req, res) {
+  try {
+    const query = req.query.q?.trim();
+
+    if (!query) {
+      // fallback: return all if query empty
+      const products = await productModel.find().limit(20);
+      return res.status(200).json({
+        message: "No search query provided. Showing all products.",
+        data: products,
+      });
+    }
+
+    const fuzzyEnabled = req.query.fuzzy === "true";
+
+    const searchStage = {
+      $search: {
+        index: "default", // matches your Atlas index name
+        text: {
+          query,
+          path: ["title", "description", "category"],
+          fuzzy: fuzzyEnabled ? { maxEdits: 2, prefixLength: 1 } : undefined,
+        },
+      },
+    };
+
+    const results = await productModel.aggregate([searchStage, { $limit: 20 }]);
+
+    return res.status(200).json({
+      message: "Search completed successfully",
+      data: results,
+    });
+  } catch (error) {
+    console.error("❌ Search error:", error);
+    res.status(500).json({ message: "Error performing search" });
+  }
+}
+
 module.exports = {
   createProduct,
   getProducts,
@@ -245,4 +292,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductsBySeller,
+  searchProducts,
 };

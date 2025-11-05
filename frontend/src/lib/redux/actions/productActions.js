@@ -3,7 +3,7 @@ import * as productAPI from '@/lib/api/productApi'
 
 // Fetch all products with filters
 export const fetchProducts = createAsyncThunk(
-  '/',
+  'products/fetchProducts',
   async (params = {}, { rejectWithValue }) => {
     try {
       const data = await productAPI.getAllProducts(params)
@@ -13,7 +13,18 @@ export const fetchProducts = createAsyncThunk(
     }
   }
 )
-
+// Search products
+export const searchProducts = createAsyncThunk(
+  'products/search',
+  async (searchQuery, { rejectWithValue }) => {
+    try {
+      const data = await productAPI.searchProducts(searchQuery)
+      return data.data // Return search results
+    } catch (error) {
+      return rejectWithValue(error.message || 'Failed to search products')
+    }
+  }
+)
 // Fetch single product by ID
 export const fetchProductById = createAsyncThunk(
   '/:id',

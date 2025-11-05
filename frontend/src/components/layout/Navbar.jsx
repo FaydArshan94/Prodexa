@@ -5,144 +5,213 @@ import { Search, ShoppingCart, User, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser, fetchCurrentUser } from "../../lib/redux/actions/authActions";
-import { use, useEffect } from "react";
+import {
+  logoutUser,
+  fetchCurrentUser,
+} from "../../lib/redux/actions/authActions";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchCart } from "@/lib/redux/actions/cartActions";
 
 export default function Navbar() {
   const auth = useSelector((state) => state.auth);
-  const { cart = [], isLoading, totals } = useSelector((state) => state.cart);
-
-
 
   const dispatch = useDispatch();
+  const router = useRouter();
 
+  // 🔍 Search States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const timeoutRef = useRef(null);
+
+  // Fetch live suggestions
   useEffect(() => {
-    if (!auth.user) {
-      dispatch(fetchCurrentUser());
+    if (!searchTerm.trim()) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
     }
-  }, [dispatch, auth.user]);
+
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+          }/api/products/search?q=${encodeURIComponent(searchTerm)}&limit=5`
+        );
+        const data = await res.json();
+        setSuggestions(data.data || []);
+        setShowDropdown(true);
+      } catch (err) {
+        console.error("Suggestion error:", err);
+      }
+    }, 300);
+  }, [searchTerm]);
+
+  // Submit search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/products?q=${encodeURIComponent(searchTerm.trim())}`);
+      setShowDropdown(false);
+    }
+  };
+
+  // Click on suggestion
+  const handleSelectSuggestion = (text) => {
+    setSearchTerm("");
+    setShowDropdown(false);
+    router.push(`/products?q=${encodeURIComponent(text)}`);
+  };
+  const { cart = [] } = useSelector((state) => state.cart);
 
 
+  
+
+  // ✅ Fetch user on mount
+useEffect(() => {
+  if (!auth.user) {
+    dispatch(fetchCurrentUser());
+  }
+}, [dispatch, auth.user]);
+
+// ✅ Fetch cart when user is authenticated
+useEffect(() => {
+  if (auth.user && auth.isAuthenticated) {
+    dispatch(fetchCart());
+  }
+}, [dispatch, auth.user, auth.isAuthenticated]);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white">
-      {/* Top Bar */}
-      <div className="border-b bg-slate-50">
-        <div className="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
-          <div className="flex gap-4">
-            <Link
-              href="/seller"
-              className="text-slate-600 hover:text-slate-900"
-            >
-              Become a Seller
-            </Link>
-            <Link
-              href="/track-order"
-              className="text-slate-600 hover:text-slate-900"
-            >
-              Track Order
-            </Link>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/help" className="text-slate-600 hover:text-slate-900">
-              Help & Support
-            </Link>
-          </div>
-        </div>
-      </div>
+    <>
+      {/* {showDropdown && suggestions.length > 0 && (
+        <div className="fixed inset-0 bg-black/40 z-[51]" onClick={() => setShowDropdown(false)} />
+      )} */}
+      <nav className="sticky top-0 z-50 md:py-2 w-full border-b bg-white">
+        {/* Top Bar */}
 
-      {/* Main Navbar */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <h1 className="text-2xl font-bold text-slate-900">
-              PRO<span className="text-blue-600">DEXA</span>
-            </h1>
-          </Link>
+        {/* Main Navbar */}
+        <div className="container mx-auto px-4 py-4 md:py-1  ">
+          <div className="flex items-center justify-between gap-4 md:flex-row flex-wrap md:flex-nowrap ">
+            {/* Logo */}
+            <Link
+              href="/"
+              onClick={() => setSearchTerm("")}
+              className="flex items-center"
+            >
+              <h1 className="text-2xl font-bold text-slate-900">
+                PRO<span className="text-blue-600">DEXA</span>
+              </h1>
+            </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                type="search"
-                placeholder="Search for products, brands and more..."
-                className="pl-10 pr-4"
-              />
+            <div className="md:pt-0 w-full order-last md:order-none  flex gap-6 overflow-x-auto  md:items-center md:justify-center">
+              {/* Search Bar */}
+              <div className="flex-1 max-w-xl relative ">
+                <form onSubmit={handleSearch}>
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search for products, brands and more..."
+                    className="pl-10 pr-4"
+                    onFocus={() => searchTerm && setShowDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                  />
+                </form>
+
+                {/* 🔽 Dropdown Suggestions */}
+              </div>
             </div>
-          </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center gap-2">
-            {/* Login Button */}
-            {!auth.isAuthenticated ? (
-              <Button variant="ghost" className="gap-2">
-                <User className="h-5 w-5" />
-                <span className="hidden md:inline">
-                  <Link href="/login">Login</Link>
-                </span>
-              </Button>
-            ) : (
-              <div>
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-2">
+              {!auth.isAuthenticated ? (
                 <Button variant="ghost" className="gap-2">
                   <User className="h-5 w-5" />
-                  <span className="hidden md:inline">
-                    <Link href="/profile">{auth.user?.username}</Link>
-                  </span>
+                  <Link
+                    href="/login"
+                    onClick={() => setSearchTerm("")}
+                    className="hidden md:inline"
+                  >
+                    Login
+                  </Link>
                 </Button>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" className="gap-2">
+                    <User className="h-5 w-5" />
+                    <Link
+                      href="/profile"
+                      onClick={() => setSearchTerm("")}
+                      className="hidden md:inline"
+                    >
+                      {auth.user?.username}
+                    </Link>
+                  </Button>
 
-                <Button
-                  onClick={() => {
-                    dispatch(logoutUser());
-                  }}
-                  variant="ghost" className="text-center">
-                  <LogOut className="h-5 w-5" />
-                  
-                </Button>
-              </div>
-            )}
+                  <Button
+                    onClick={() => dispatch(logoutUser())}
+                    variant="ghost"
+                    className="text-center"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
 
-            {/* Cart Button */}
-            <Link  href="/cart" variant="ghost" className="gap-2 relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="hidden md:inline">
-                <span>Cart</span>
-              </span>
-              {/* Cart Count Badge */}
-              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
-                {cart.length || 0}
-              </span>
-            </Link>
+              {/* Cart Button */}
+              <Link
+                href="/cart"
+                onClick={() => setSearchTerm("")}
+                className="relative flex items-center gap-2"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {/* <span className="hidden md:inline"></span> */}
+                <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
+                  {cart.length || 0}
+                </span>
+              </Link>
 
-            {/* Mobile Menu */}
-            <Button variant="ghost" className="md:hidden">
+              {/* Mobile Menu */}
+              {/* <Button variant="ghost" className="md:hidden">
               <Menu className="h-5 w-5" />
-            </Button>
+            </Button> */}
+            </div>
           </div>
         </div>
 
-        {/* Categories Bar */}
-        <div className="mt-4 flex gap-6 overflow-x-auto pb-2">
-          {[
-            "Electronics",
-            "Fashion",
-            "Home & Kitchen",
-            "Beauty",
-            "Sports",
-            "Books",
-            "Toys",
-          ].map((category) => (
-            <Link
-              key={category}
-              href={`/category/${category.toLowerCase()}`}
-              className="text-sm text-slate-600 hover:text-slate-900 whitespace-nowrap"
-            >
-              {category}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </nav>
+        {showDropdown && suggestions.length > 0 && (
+          <div className="absolute top-full left-1/2 -translate-x-1/2  z-[52]">
+            <ul className="w-full bg-white border border-gray-200 shadow-xl rounded-md mt-1 max-h-[70vh] overflow-y-auto">
+              {suggestions.map((item) => (
+                <li
+                  key={item._id}
+                  className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-none"
+                  onMouseDown={() => handleSelectSuggestion(item.title)}
+                >
+                  <div className="flex items-center gap-3">
+                    {item.images?.[0]?.url && (
+                      <img
+                        src={item.images[0].url}
+                        alt={item.title}
+                        className="w-12 h-12 object-cover rounded-md"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-gray-800">
+                        {item.title}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </nav>
+    </>
   );
 }

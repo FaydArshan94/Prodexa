@@ -19,11 +19,12 @@ router.post(
 );
 
 // GET /api/products
-
 router.get("/", productController.getProducts);
 
-router.get("/seller", createAuthMiddleware(["seller"]), productController.getProductsBySeller);
+// Search products (must be before /:id route)
+router.get("/search", productController.searchProducts);
 
+router.get("/seller", createAuthMiddleware(["seller"]), productController.getProductsBySeller);
 
 // GET /api/products/:id
 router.get("/:id", productController.getProductById);
@@ -40,4 +41,5 @@ router.delete(
   createAuthMiddleware(["seller"]),
   productController.deleteProduct
 );
+
 module.exports = router;

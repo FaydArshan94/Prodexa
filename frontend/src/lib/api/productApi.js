@@ -11,6 +11,17 @@ export const getAllProducts = async (params = {}) => {
   }
 }
 
+// Search products with query
+// params: { q, minprice, maxprice, skip, limit }
+export const searchProducts = async (params = {}) => {
+  try {
+    const response = await productApi.get('/search', { params })
+    return response.data // { message, data }
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to search products' }
+  }
+}
+
 // Get single product by ID
 export const getProductById = async (id) => {
   try {

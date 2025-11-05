@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { fetchCurrentUser } from "@/lib/redux/actions/authActions";
 import { fetchProducts } from "@/lib/redux/actions/productActions";
 import { ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -54,10 +55,12 @@ export default function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
+             <Link href="/products">
+               <Button size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
                 Start Shopping
                 <ArrowRight className="h-5 w-5" />
               </Button>
+             </Link>
               <Button size="lg" variant="outline">
                 Browse Categories
               </Button>

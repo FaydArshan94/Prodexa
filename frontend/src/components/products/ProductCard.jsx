@@ -85,7 +85,10 @@ export default function ProductCard({ product }) {
       <div className="p-4 space-y-3">
         {/* Product Name */}
         <Link href={`/products/${product?._id}`}>
-          <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+          <h3
+            title={product?.title}
+            className="font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors"
+          >
             {product?.title}
           </h3>
         </Link>
@@ -121,7 +124,7 @@ export default function ProductCard({ product }) {
             // e.preventDefault();
             handleAddToCart(product._id);
           }}
-          className="w-full gap-2 group-hover:bg-blue-600 transition-colors"
+          className="w-full gap-2 hover:bg-blue-600 transition-colors"
           size="sm"
         >
           <ShoppingCart className="h-4 w-4" />
