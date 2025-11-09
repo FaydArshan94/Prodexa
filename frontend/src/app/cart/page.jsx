@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -8,26 +8,38 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import CartItem from "@/components/cart/CartItem";
 import {
-  Plus,
-  Minus,
-  Trash2,
   ShoppingBag,
   Tag,
   ArrowRight,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCart, removeFromCart, updateQuantity } from "@/lib/redux/actions/cartActions";
 import { updateQuantityOptimistic } from "@/lib/redux/slices/cartSlice";
+import { cartSocketService } from "@/lib/services/cartSocketService";
+
 
 export default function CartPage() {
   const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+
+  
 
   const { cart = [], isLoading, totals } = useSelector((state) => state.cart);
 
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
+  useEffect(() => {
+    if (auth?.token) {
+      cartSocketService.initialize(auth.token); // 👈 MUST PASS TOKEN
+    }
+  }, [auth?.token]);
+
+  // Fetch cart on mount
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
@@ -49,11 +61,13 @@ export default function CartPage() {
   const deliveryCharges = subtotal > 499 ? 0 : 50;
   const total = subtotal - couponDiscount + deliveryCharges;
 
-  // Update quantity
-  const handleUpdateQuantity = async (productId, change) => {
+  // Update quantity with useCallback
+  const handleUpdateQuantity = useCallback(async (productId, change) => {
     const item = cart.find((item) => item.productId === productId);
     if (item) {
       const newQuantity = item.quantity + change;
+      const previousQuantity = item.quantity;
+      
       // Optimistically update the UI
       dispatch(updateQuantityOptimistic({ productId, quantity: newQuantity }));
 
@@ -62,18 +76,16 @@ export default function CartPage() {
         await dispatch(updateQuantity({ productId, quantity: newQuantity }));
       } catch (error) {
         // If the backend update fails, revert to the previous quantity
-        dispatch(
-          updateQuantityOptimistic({ productId, quantity: item.quantity })
-        );
+        dispatch(updateQuantityOptimistic({ productId, quantity: previousQuantity }));
         console.error("Failed to update quantity:", error);
       }
     }
-  };
+  }, [cart, dispatch]);
 
-  // Remove item
-  const removeItem = (productId) => {
+  // Remove item with useCallback
+  const removeItem = useCallback((productId) => {
     dispatch(removeFromCart(productId));
-  };
+  }, [dispatch]);
 
   // Apply coupon
   const applyCoupon = () => {
@@ -153,118 +165,12 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item) => (
-              <Card key={item._id || item.productId} className="p-4">
-                <div className="flex gap-4">
-                  {/* Product Image */}
-                  <Link href={`/products/${item.productId}`}>
-                    <div className="w-24 h-24 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden cursor-pointer hover:bg-slate-100 transition-colors flex-shrink-0">
-                      {item.productSnapshot?.image ? (
-                        <img
-                          src={item.productSnapshot.image}
-                          alt={item.productSnapshot?.title || "Product"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-4xl">📦</span>
-                      )}
-                    </div>
-                  </Link>
-
-                  {/* Product Details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between gap-4 mb-2">
-                      <div className="flex-1">
-                        <Link href={`/products/${item.productId}`}>
-                          <h3 className="font-semibold text-slate-900 hover:text-blue-600 transition-colors line-clamp-2">
-                            {item.productSnapshot?.title || "Product"}
-                          </h3>
-                        </Link>
-                        {item.productSnapshot?.seller && (
-                          <p className="text-sm text-slate-500 mt-1">
-                            Sold by: {item.productSnapshot.seller}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeItem(item.productId)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Stock Status */}
-                    <div className="mb-3">
-                      {item.productSnapshot?.stock > 0 ? (
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-100 text-green-700"
-                        >
-                          In Stock
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="secondary"
-                          className="bg-red-100 text-red-700"
-                        >
-                          Out of Stock
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Price & Quantity */}
-                    <div className="flex items-center justify-between">
-                      {/* Quantity Controls */}
-                      <div className="flex items-center border rounded-lg">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            handleUpdateQuantity(item.productId, -1)
-                          }
-                          className="rounded-r-none h-8"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="px-4 font-semibold text-sm min-w-[40px] text-center">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            handleUpdateQuantity(item.productId, 1)
-                          }
-                          className="rounded-l-none h-8"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      {/* Price */}
-                      <div className="text-right">
-                        <div className="font-bold text-lg text-slate-900">
-                          ₹
-                          {(
-                            (item.productSnapshot?.price || 0) * item.quantity
-                          ).toLocaleString()}
-                        </div>
-                        {item.productSnapshot?.discountPrice && (
-                          <div className="text-sm text-slate-400 line-through">
-                            ₹
-                            {(
-                              item.productSnapshot.discountPrice * item.quantity
-                            ).toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <CartItem
+                key={item._id || item.productId}
+                item={item}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemove={removeItem}
+              />
             ))}
 
             {/* Continue Shopping Button */}

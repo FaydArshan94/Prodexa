@@ -1,5 +1,6 @@
 const cartModel = require("../models/cart.model");
 const axios = require("axios");
+const { getIO } = require("../services/socket"); // Setup socket.io
 
 async function getCart(req, res) {
   const userId = req.user.id;
@@ -76,6 +77,19 @@ async function addItemToCart(req, res) {
 
     await cart.save();
 
+    try {
+      const io = getIO();
+      io.to(userId).emit("cart:updated", {
+        type: "item_added",
+        cart: cart,
+        message: "Item added to cart",
+      });
+      console.log(`Socket event emitted to user: ${userId}`);
+    } catch (socketError) {
+      console.error("Socket emit error:", socketError);
+      // Don't fail the request if socket fails
+    }
+
     return res.status(200).json({
       message: "Item added to cart",
       cart,
@@ -109,6 +123,20 @@ async function updateCartItem(req, res) {
     cart.items[itemIndex].quantity = quantity;
     await cart.save();
 
+    try {
+      const io = getIO();
+      io.to(userId).emit('cart:updated', {
+        type: 'quantity_updated',
+        cart: cart.items,
+        message: 'Quantity updated',
+        timestamp: new Date()
+      });
+    } catch (socketError) {
+      console.error('Socket emit error:', socketError);
+    }
+
+
+
     return res.status(200).json({
       message: "Item quantity updated",
       cart,
@@ -124,7 +152,6 @@ async function removeItemFromCart(req, res) {
     const userId = req.user.id;
     const { productId } = req.params;
 
-
     let cart = await cartModel.findOne({ user: userId });
 
     if (!cart || cart.items.length === 0) {
@@ -136,6 +163,19 @@ async function removeItemFromCart(req, res) {
     );
 
     await cart.save();
+
+
+     try {
+      const io = getIO();
+      io.to(userId).emit('cart:updated', {
+        type: 'item_removed',
+        cart: cart.items,
+        message: 'Item removed from cart',
+        timestamp: new Date()
+      });
+    } catch (socketError) {
+      console.error('Socket emit error:', socketError);
+    }
 
     return res.status(200).json({
       message: "Item removed from cart",
@@ -247,32 +287,30 @@ async function syncCartWithProducts(req, res) {
   }
 }
 
-
-
 async function clearCart(req, res) {
   try {
     const userId = req.user.id;
     const cart = await cartModel.findOne({ user: userId });
 
-    if (!cart) return res.status(200).json({ message: "Cart is already empty" });
+    if (!cart)
+      return res.status(200).json({ message: "Cart is already empty" });
 
     cart.items = [];
     await cart.save();
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Cart cleared successfully",
       cart: null,
       totals: {
         itemCount: 0,
-        totalQuantity: 0
-      }
+        totalQuantity: 0,
+      },
     });
   } catch (error) {
     console.error("Error clearing cart:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
-
 
 module.exports = {
   getCart,

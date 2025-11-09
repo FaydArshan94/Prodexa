@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchCart } from "@/lib/redux/actions/cartActions";
+import { cartSocketService } from "@/lib/services/cartSocketService";
 
 export default function Navbar() {
   const auth = useSelector((state) => state.auth);
@@ -67,22 +68,41 @@ export default function Navbar() {
   };
   const { cart = [] } = useSelector((state) => state.cart);
 
+ useEffect(() => {
+    if (auth.user && auth.isAuthenticated) {
+      dispatch(fetchCart());
+    }
+  }, [dispatch, auth.user, auth.isAuthenticated]);
 
-  
+
+
+
+
+  useEffect(() => {
+    if (auth.user && auth.token) {
+      cartSocketService.initialize(auth.token);
+    }
+
+    // return () => {
+    //   if (!auth.user) {
+    //     cartSocketService.disconnect();
+    //   }
+    // };
+  }, [auth.user, auth.token]);
 
   // ✅ Fetch user on mount
-useEffect(() => {
-  if (!auth.user) {
-    dispatch(fetchCurrentUser());
-  }
-}, [dispatch, auth.user]);
+  useEffect(() => {
+    if (!auth.user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [dispatch, auth.user]);
 
-// ✅ Fetch cart when user is authenticated
-useEffect(() => {
-  if (auth.user && auth.isAuthenticated) {
-    dispatch(fetchCart());
-  }
-}, [dispatch, auth.user, auth.isAuthenticated]);
+  // ✅ Fetch cart when user is authenticated
+  useEffect(() => {
+    if (auth.user && auth.isAuthenticated) {
+      dispatch(fetchCart());
+    }
+  }, [dispatch, auth.user, auth.isAuthenticated]);
 
   return (
     <>
