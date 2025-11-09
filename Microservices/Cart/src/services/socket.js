@@ -50,21 +50,15 @@ const initializeSocket = (server) => {
   return socketIo;
 };
 
-// 🔁 Emit event to all connected users every 5 seconds (for testing)
-setInterval(() => {
-  if (io && connectedUsers.size > 0) {
-    for (const userId of connectedUsers) {
-      console.log("🟢 Emitting cart:updated to user:", userId);
-      io.to(userId).emit("cart:updated", {
-        message: `Cart updated for user: ${userId}`,
-      });
-    }
-  } else if (io) {
-    // Global emit for system/AI tests
-    console.log("🟢 Emitting cart:updated globally (no user connected)");
-    io.emit("cart:updated", { message: "Global cart update (AI test)" });
+// Function to emit cart updates for specific user
+const emitCartUpdate = (userId) => {
+  if (io && userId) {
+    console.log("🟢 Emitting cart:updated to user:", userId);
+    io.to(userId).emit("cart:updated", {
+      message: `Cart updated for user: ${userId}`,
+    });
   }
-}, 5000);
+};
 
 const getIO = () => {
   if (!io) {
@@ -73,4 +67,4 @@ const getIO = () => {
   return io;
 };
 
-module.exports = { initializeSocket, getIO };
+module.exports = { initializeSocket, getIO, emitCartUpdate };
