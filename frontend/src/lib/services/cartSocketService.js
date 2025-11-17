@@ -12,7 +12,7 @@ class CartSocketService {
     if (this.isInitialized || !token) return;
 
     this.socket = io("http://localhost:3002", {
-      auth: { token }, // 👈 pass JWT here
+      auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -20,9 +20,11 @@ class CartSocketService {
     });
 
     this.socket.on("connect", () => {
+      console.log("Socket connected");
     });
 
     this.socket.on("connect_error", (err) => {
+      console.error("Socket error:", err);
     });
 
     this.socket.on("cart:updated", (data) => {
@@ -30,6 +32,13 @@ class CartSocketService {
     });
 
     this.isInitialized = true;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.isInitialized = false;
+    }
   }
 }
 

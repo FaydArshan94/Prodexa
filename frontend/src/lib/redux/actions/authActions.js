@@ -55,3 +55,27 @@ export const fetchCurrentUser = createAsyncThunk(
     }
   }
 )
+
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async ({ token, profileData }, { rejectWithValue }) => {
+    try {
+      const data = await authAPI.updateProfile(token, profileData);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async ({ token, passwordData }, { rejectWithValue }) => {
+    try {
+      const data = await authAPI.changePassword(token, passwordData);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to change password');
+    }
+  }
+);

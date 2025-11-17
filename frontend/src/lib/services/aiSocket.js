@@ -8,11 +8,15 @@ class AISocketService {
     this.isInitialized = false;
   }
 
-  initialize() {
-    if (this.isInitialized) return;
+  initialize(token) {
+    if (this.isInitialized || !token) return;
 
     this.socket = io(process.env.NEXT_PUBLIC_AI_BUDDY_URL, {
+      auth: { token },
       withCredentials: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
     });
 
     this.socket.on('connect', () => {
@@ -41,7 +45,6 @@ class AISocketService {
   sendMessage(message) {
     if (!this.socket) return;
     
-
     store.dispatch(addMessage({
       role: 'user',
       content: message,

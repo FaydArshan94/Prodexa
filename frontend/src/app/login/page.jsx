@@ -23,6 +23,8 @@ import {
   Lock,
   Loader2,
 } from "lucide-react";
+import { cartSocketService } from "@/lib/services/cartSocketService";
+import { aiSocketService } from "@/lib/services/aiSocket";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,17 +79,18 @@ export default function LoginPage() {
     try {
       const result = await dispatch(login(data)).unwrap();
 
-
-
       const token = result?.token;
 
       console.log(token);
-      
 
       if (token) {
         localStorage.setItem("token", token);
-
       }
+
+      // After successful login
+      dispatch(loginSuccess({ user, token }));
+      cartSocketService.initialize(token);
+      aiSocketService.initialize(token);
 
       // Redirect based on role
       if (result.user?.role === "seller") {
@@ -98,10 +101,12 @@ export default function LoginPage() {
     } catch (err) {
       console.error("Login failed:", err);
       // Show error message to user through UI
-      const errorMessage = err.message || "Login failed. Please check your credentials and try again.";
+      const errorMessage =
+        err.message ||
+        "Login failed. Please check your credentials and try again.";
       dispatch({
         type: "auth/loginFailure",
-        payload: errorMessage
+        payload: errorMessage,
       });
     }
   };

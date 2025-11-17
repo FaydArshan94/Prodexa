@@ -47,6 +47,7 @@ async function registerUser(req, res) {
     {
       id: user._id,
       username: user.username,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
     },
@@ -99,6 +100,7 @@ async function loginUser(req, res) {
         id: user._id,
         username: user.username,
         email: user.email,
+        fullName: user.fullName,
         role: user.role,
       },
       process.env.JWT_SECRET,
@@ -214,7 +216,9 @@ async function deleteUserAddress(req, res) {
 
 async function getUserById(req, res) {
   try {
-    const user = await userModel.findById(req.params.id).select("username email"); // Public fields only
+    const user = await userModel
+      .findById(req.params.id)
+      .select("username email"); // Public fields only
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -225,6 +229,54 @@ async function getUserById(req, res) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
+
+async function updateProfile(req, res) {
+  try {
+    const {
+      fullName: { firstName, lastName },
+      email,
+      username,
+    } = req.body;
+    const userId = req.user.id;
+
+    const updatedUser = await userModel
+      .findByIdAndUpdate(
+        userId,
+        { fullName: { firstName, lastName }, email, username },
+        { new: true, runValidators: true }
+      )
+      .select("-password");
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const user = await userModel.findById(userId).select("+password");
+
+    // Verify current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Current password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
 module.exports = {
   registerUser,
   loginUser,
@@ -234,4 +286,6 @@ module.exports = {
   addUserAddress,
   getUserAddresses,
   deleteUserAddress,
+  updateProfile,
+  changePassword,
 };

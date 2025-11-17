@@ -18,6 +18,12 @@ router.post("/users/me/addresses", authMiddleware.authMiddleware, authController
 router.delete("/users/me/addresses/:addressId", authMiddleware.authMiddleware, authController.deleteUserAddress);
 
 
+
+// Add these routes in your auth routes file
+router.put("/users/me/profile", authMiddleware.authMiddleware, authController.updateProfile);
+router.put("/users/me/password", authMiddleware.authMiddleware, authController.changePassword);
+
+
 router.get("/users/:id", authController.getUserById);
 
 module.exports = router;

@@ -55,3 +55,23 @@ export const refreshToken = async () => {
     throw error.response?.data || { message: 'Token refresh failed' }
   }
 }
+
+
+
+export const updateProfile = async (token, profileData) => {
+   try {
+    const response = await authApi.put('/api/auth/users/me/profile', profileData, )
+    return response.data
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to update profile' }
+  }
+};
+
+export const changePassword = async (token, passwordData) => {
+  try {
+    const response = await authApi.put('/api/auth/users/me/password', passwordData, )
+    return response.data
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to change password' }
+  }
+}

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { AIChatWidget } from "@/components/ui/AIChatWidget";
 import { SocketProvider } from "@/lib/services/socketContext";
+import SocketInitializer from "@/components/SocketInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,28 +21,19 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </head>
-      <body>
+      <body className="antialiased">
         <ReduxProvider>
-           <SocketProvider>
+          <SocketProvider>
+            <SocketInitializer />
             {children}
+            <AIChatWidget />
           </SocketProvider>
-          <AIChatWidget />
         </ReduxProvider>
-      </body>
-    </html>
-  );
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );
