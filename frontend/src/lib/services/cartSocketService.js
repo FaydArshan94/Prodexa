@@ -20,15 +20,12 @@ class CartSocketService {
     });
 
     this.socket.on("connect", () => {
-      console.log("✅ Connected to Cart Service Socket");
     });
 
     this.socket.on("connect_error", (err) => {
-      console.error("❌ Cart socket error:", err.message);
     });
 
     this.socket.on("cart:updated", (data) => {
-      console.log("🔔 Cart updated in real-time:", data);
       store.dispatch(fetchCart());
     });
 

@@ -35,15 +35,12 @@ export function SocketProvider({ children }) {
     );
 
     newSocket.on('connect', () => {
-      console.log('✅ Connected to cart service');
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('❌ Socket connection error:', error.message);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
     });
 
     setSocket(newSocket);

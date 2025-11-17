@@ -10,7 +10,7 @@ import {
   fetchCurrentUser,
 } from "../../lib/redux/actions/authActions";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { fetchCart } from "@/lib/redux/actions/cartActions";
 import { cartSocketService } from "@/lib/services/cartSocketService";
 
@@ -25,7 +25,7 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const timeoutRef = useRef(null);
-
+  const pathname = usePathname();
   // Fetch live suggestions
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -68,15 +68,11 @@ export default function Navbar() {
   };
   const { cart = [] } = useSelector((state) => state.cart);
 
- useEffect(() => {
+  useEffect(() => {
     if (auth.user && auth.isAuthenticated) {
       dispatch(fetchCart());
     }
   }, [dispatch, auth.user, auth.isAuthenticated]);
-
-
-
-
 
   useEffect(() => {
     if (auth.user && auth.token) {
@@ -126,25 +122,29 @@ export default function Navbar() {
               </h1>
             </Link>
 
-            <div className="md:pt-0 w-full order-last md:order-none  flex gap-6 overflow-x-auto  md:items-center md:justify-center">
-              {/* Search Bar */}
-              <div className="flex-1 max-w-xl relative ">
-                <form onSubmit={handleSearch}>
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    type="search"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search for products, brands and more..."
-                    className="pl-10 pr-4"
-                    onFocus={() => searchTerm && setShowDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-                  />
-                </form>
+            {pathname === "/products" && (
+              <div className="md:pt-0 w-full order-last md:order-none  flex gap-6 overflow-x-auto  md:items-center md:justify-center">
+                {/* Search Bar */}
+                <div className="flex-1 max-w-xl relative ">
+                  <form onSubmit={handleSearch}>
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      type="search"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search for products, brands and more..."
+                      className="pl-10 pr-4"
+                      onFocus={() => searchTerm && setShowDropdown(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowDropdown(false), 150)
+                      }
+                    />
+                  </form>
 
-                {/* 🔽 Dropdown Suggestions */}
+                  {/* 🔽 Dropdown Suggestions */}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function Navbar() {
                   <Link
                     href="/login"
                     onClick={() => setSearchTerm("")}
-                    className="hidden md:inline"
+                    className=" md:inline"
                   >
                     Login
                   </Link>

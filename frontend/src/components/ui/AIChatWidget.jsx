@@ -10,6 +10,9 @@ export function AIChatWidget() {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
   const dispatch = useDispatch();
+
+  const auth = useSelector((state) => state.auth);
+
   
   const { messages, isConnected, isTyping } = useSelector((state) => state.aiChat);
 
@@ -36,6 +39,12 @@ export function AIChatWidget() {
     dispatch(clearMessages());
     aiSocketService.disconnect();
   };
+
+
+
+  if(!auth.isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
