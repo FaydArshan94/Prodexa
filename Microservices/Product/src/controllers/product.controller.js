@@ -7,7 +7,7 @@ const axios = require("axios");
 // Accepts multipart/form-data with fields: title, description, priceAmount, priceCurrency, images[] (files)
 async function createProduct(req, res) {
   try {
-    const { title, description, priceAmount, priceCurrency = "INR" } = req.body;
+    const { title, description, priceAmount, priceCurrency = "INR",stock } = req.body;
     const seller = req.user.id; // Extract seller from authenticated user
 
     const price = {
@@ -25,6 +25,7 @@ async function createProduct(req, res) {
       price,
       seller,
       images,
+      stock,
     });
 
     await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_CREATED", product);
@@ -129,37 +130,34 @@ async function updateProduct(req, res) {
   }
 
   const product = await productModel.findById(id);
-
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
 
   // Only seller who created the product or admin can update
   if (product.seller.toString() !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "Forbidden: You can only update your own products" });
+    return res.status(403).json({
+      message: "Forbidden: You can only update your own products",
+    });
   }
 
   // Only allow certain fields to be updated
   const allowedUpdates = ["title", "description", "images"];
   const updates = {};
 
-  // Handle basic fields
   for (const field of allowedUpdates) {
-    if (req.body[field]) {
-      updates[field] = req.body[field];
-    }
+    if (req.body[field]) updates[field] = req.body[field];
   }
-  // Handle image uploads if files are present
+
+  // Handle new images
   if (req.files && req.files.length > 0) {
     const newImages = await Promise.all(
-      (req.files || []).map((file) => uploadImage({ buffer: file.buffer }))
+      req.files.map((file) => uploadImage({ buffer: file.buffer }))
     );
     updates.images = [...(product.images || []), ...newImages];
   }
 
-  // Handle price separately due to nested structure
+  // Handle price update
   if (req.body.priceAmount !== undefined || req.body.priceCurrency) {
     const priceAmount =
       req.body.priceAmount !== undefined
@@ -172,19 +170,29 @@ async function updateProduct(req, res) {
 
     updates.price = {
       amount: priceAmount,
+      currency: req.body.priceCurrency || product.price.currency,
     };
-
-    if (req.body.priceCurrency) {
-      updates.currency = req.body.priceCurrency;
-    }
   }
+
   Object.assign(product, updates);
   await product.save();
+
+  // ⬇️⬇️ PUBLISH PRODUCT UPDATE EVENT ⬇️⬇️
+  await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_UPDATED", product);
+
+  // OPTIONAL: Notify seller (email, etc.)
+  // await publishToQueue("PRODUCT_NOTIFICATION.PRODUCT_UPDATED", {
+  //   email: req.user.email,
+  //   productId: product._id,
+  //   username: req.user.username,
+  // });
+
   return res.status(200).json({
     message: "Product updated",
     data: product,
   });
 }
+
 
 async function deleteProduct(req, res) {
   const { id } = req.params;

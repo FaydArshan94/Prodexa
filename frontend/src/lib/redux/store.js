@@ -6,6 +6,7 @@ import productsReducer from "./slices/productSlice";
 import cartReducer from "./slices/cartSlice";
 import orderReducer from "./slices/orderSlice";
 import aiChatReducer from "./features/aiChatSlice";
+import sellerReducer from "./slices/sellerSlice";
 
 
 // ... other reducers
@@ -45,6 +46,7 @@ export const store = configureStore({
     cart: cartReducer,
     orders: orderReducer,
     aiChat: aiChatReducer,
+    seller: sellerReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

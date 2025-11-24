@@ -84,6 +84,8 @@ const productSlice = createSlice({
         state.error = action.payload;
       })
 
+      // In productSlice.js - Keep it simple
+
       // Create product
       .addCase(createProduct.pending, (state) => {
         state.isLoading = true;
@@ -91,7 +93,7 @@ const productSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.sellerProducts.push(action.payload);
+        // Don't update state here - let the component refresh the data
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.isLoading = false;
@@ -105,12 +107,7 @@ const productSlice = createSlice({
       })
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.isLoading = false;
-        const index = state.sellerProducts.findIndex(
-          (p) => p._id === action.payload._id
-        );
-        if (index !== -1) {
-          state.sellerProducts[index] = action.payload;
-        }
+        // Don't update state here - let the component refresh the data
       })
       .addCase(updateProduct.rejected, (state, action) => {
         state.isLoading = false;
@@ -124,9 +121,7 @@ const productSlice = createSlice({
       })
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.sellerProducts = state.sellerProducts.filter(
-          (p) => p._id !== action.payload
-        );
+        // Don't update state here - let the component refresh the data
       })
       .addCase(deleteProduct.rejected, (state, action) => {
         state.isLoading = false;

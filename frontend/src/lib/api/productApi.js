@@ -47,7 +47,7 @@ export const getSellerProducts = async (params = {}) => {
 // productData: FormData with { title, description, priceAmount, priceCurrency, images[] }
 export const createProduct = async (productData) => {
   try {
-    const response = await productApi.post('/products', productData, {
+    const response = await productApi.post('/', productData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -62,7 +62,7 @@ export const createProduct = async (productData) => {
 // productData: FormData with updated fields
 export const updateProduct = async (productId, productData) => {
   try {
-    const response = await productApi.patch(`/products/${productId}`, productData, {
+    const response = await productApi.patch(`/${productId}`, productData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

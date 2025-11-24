@@ -60,3 +60,23 @@ module.exports = function () {
         await sendEmail(data.email, "New Product Launched", "Check out our latest product", emailHTMLTemplate);
     })
 };
+
+
+// subscribeToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_UPDATED", async (data) => {
+//     const emailHTMLTemplate = `
+//         <h1>Product Updated!</h1>
+//         <p>Dear ${data.username},</p>
+//         <p>The product with ID: ${data.productId} has been updated. Check out the latest changes!</p>
+//         <p>Best regards,<br/>The Team</p>
+//         `;  
+//     // await sendEmail(
+//     //   data.email,
+//     //   "Product Update Notification",
+//     //   "The product has been updated",
+//     //   emailHTMLTemplate
+//     // );
+// });
+
+
+
+
