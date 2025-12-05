@@ -6,80 +6,73 @@ const { publishToQueue } = require("../broker/broker");
 
 // Register a new user
 async function registerUser(req, res) {
-  const {
-    username,
-    email,
-    password,
-    fullName: { firstName, lastName },
-    role,
-  } = req.body;
+  try {
+    const { username, email, password, fullName, role } = req.body;
 
-  const isUserAlreadyExists = await userModel.findOne({
-    $or: [{ username }, { email }],
-  });
-
-  if (isUserAlreadyExists) {
-    return res.status(409).json({ message: "User already exists" });
-  }
-
-  const hash = await bcrypt.hash(password, 10);
-
-  const user = await userModel.create({
-    username,
-    email,
-    password: hash,
-    fullName: { firstName, lastName },
-    role: role || "user",
-  });
-
-  await Promise.all([
-    publishToQueue("AUTH_NOTIFICATION.USER_CREATED", {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      fullName: user.fullName,
-    }),
-
-    publishToQueue("AUTH_SELLER_DASHBOARD.USER_CREATED", user),
-  ]);
-
-  const token = jwt.sign(
-    {
-      id: user._id,
-      username: user.username,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "1d",
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
-  );
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-  });
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-  });
 
-  res.status(201).json({
-    message: "User registered successfully",
-    token,
-    user: {
+    const exists = await userModel.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+
+    if (exists) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await userModel.create({
+      username,
+      email,
+      password: hashed,
+      fullName: {
+        firstName: fullName?.firstName || "",
+        lastName: fullName?.lastName || "",
+      },
+      role: role || "user",
+    });
+
+    // publish events
+    await publishToQueue("AUTH_NOTIFICATION.USER_CREATED", {
       id: user._id,
       username: user.username,
       email: user.email,
-      role: user.role,
       fullName: user.fullName,
-      adresses: user.addresses,
-    },
-  });
+    });
+
+    // JWT
+    const token = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user,
+    });
+
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 }
+
 
 async function loginUser(req, res) {
   try {

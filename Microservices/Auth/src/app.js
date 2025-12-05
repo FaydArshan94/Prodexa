@@ -10,6 +10,9 @@ const authRouter = require('./routes/auth.routes');
 
 const app = express();
 
+
+app.use(express.urlencoded({ extended: true }));
+
 app.use(
   cors({
     origin: "http://localhost:5173", // Frontend URL
