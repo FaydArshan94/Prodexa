@@ -27,6 +27,7 @@ export const getSellerOrders = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data;
+      
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
     }

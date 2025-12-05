@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema(
     },
     shippingAddress: {
       type: addressSchema,
-      required: true,
+      required: false,
     },
 
     cancellationReason: { type: String, minlength: 10, maxlength: 500, default: null },

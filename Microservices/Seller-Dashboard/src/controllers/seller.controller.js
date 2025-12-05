@@ -14,7 +14,7 @@ async function getMetrics(req, res) {
     // Get all orders containing seller's products
     const orders = await orderModel.find({
       "items.productId": { $in: productIds },
-      status: { $in: ["CONFIRMED", "SHIPPED", "DELIVERED"] },
+      status: { $in: ["Shipped", "Delivered"] },
     });
 
     // Sales: total number of items sold
@@ -24,11 +24,11 @@ async function getMetrics(req, res) {
 
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        if (productIds.includes(item.product)) {
+        if (productIds.some((id) => id.toString() === item.productId.toString())) {
           sales += item.quantity;
           revenue += item.price.amount * item.quantity;
-          productSales[item.product] =
-            (productSales[item.product] || 0) + item.quantity;
+          productSales[item.productId] =
+            (productSales[item.productId] || 0) + item.quantity;
         }
       });
     });

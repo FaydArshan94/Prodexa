@@ -76,7 +76,7 @@ export const updateProduct = async (productId, productData) => {
 // Delete product (seller only, requires auth)
 export const deleteProduct = async (productId) => {
   try {
-    const response = await productApi.delete(`/products/${productId}`)
+    const response = await productApi.delete(`/${productId}`)
     return response.data // { message }
   } catch (error) {
     throw error.response?.data || { message: 'Failed to delete product' }

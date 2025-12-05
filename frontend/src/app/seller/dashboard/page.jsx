@@ -13,6 +13,7 @@ import {
   Trash2,
   Plus,
   X,
+  LogOut,
 } from "lucide-react";
 import {
   getSellerMetrics,
@@ -23,13 +24,19 @@ import Link from "next/link";
 import {
   createProduct,
   updateProduct,
+  deleteProduct,
 } from "@/lib/redux/actions/productActions";
 import { AlertCircle, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { logoutUser } from "@/lib/redux/actions/authActions";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function SellerDashboard() {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("dashboard");
+    const router = useRouter();
+  
 
   const { user, token } = useSelector((state) => state.auth);
   const {
@@ -39,8 +46,7 @@ export default function SellerDashboard() {
     isLoading,
   } = useSelector((state) => state.seller);
 
-  // console.log(products.data);
-  
+  // console.log(orders);
 
   // Modals
   const [showProductModal, setShowProductModal] = useState(false);
@@ -84,6 +90,26 @@ export default function SellerDashboard() {
       stock: "",
     },
   });
+
+  const handleDeleteProduct = async (productId) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this product? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await dispatch(deleteProduct(productId)).unwrap();
+      alert("Product deleted successfully!");
+      // Refresh products list
+      await dispatch(getSellerProducts(token));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert(error || "Failed to delete product");
+    }
+  };
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
@@ -254,6 +280,14 @@ export default function SellerDashboard() {
     setSelectedProduct(null);
   };
 
+
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    router.push("/login");
+  };
+
+
   const handleAddProductClick = () => {
     resetForm();
     setShowProductModal(true);
@@ -355,7 +389,7 @@ export default function SellerDashboard() {
         </button>
       </div>
 
-      {products?.data.length > 0 ? (
+      {products?.data?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products?.data.map((product) => (
             <div
@@ -392,7 +426,10 @@ export default function SellerDashboard() {
                     <Edit className="w-4 h-4" />
                     Edit
                   </button>
-                  <button className="flex-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => handleDeleteProduct(product._id)}
+                    className="flex-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2"
+                  >
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
@@ -410,7 +447,10 @@ export default function SellerDashboard() {
           <p className="text-gray-600 mb-6">
             Start adding products to your store
           </p>
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2">
+          <button
+            onClick={handleAddProductClick} // Add this
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition inline-flex items-center gap-2"
+          >
             <Plus className="w-5 h-5" />
             Add Your First Product
           </button>
@@ -776,6 +816,13 @@ export default function SellerDashboard() {
                 <p className="text-sm text-gray-600">Welcome back,</p>
                 <p className="font-semibold text-gray-900">{user?.username}</p>
               </div>
+              <Button
+                onClick={(handleLogout)}
+                variant="ghost"
+                className="text-center"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>

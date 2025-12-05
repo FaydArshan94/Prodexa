@@ -178,7 +178,7 @@ async function updateProduct(req, res) {
   await product.save();
 
   // ⬇️⬇️ PUBLISH PRODUCT UPDATE EVENT ⬇️⬇️
-  await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_UPDATED", product);
+  await publishToQueue("PRODUCT_UPDATED", product);
 
   // OPTIONAL: Notify seller (email, etc.)
   // await publishToQueue("PRODUCT_NOTIFICATION.PRODUCT_UPDATED", {
@@ -213,6 +213,10 @@ async function deleteProduct(req, res) {
   }
 
   await productModel.findByIdAndDelete({ _id: id });
+
+
+
+   await publishToQueue("PRODUCT_DELETED", { _id: id });
 
   return res.status(200).json({
     message: "successfully deleted",

@@ -1,37 +1,31 @@
-const amqp = require("amqplib");
-const SellerProduct = require("../models/product.model"); // local copy
+const { subscribeToQueue } = require("../broker/broker"); 
+const productModel = require("../models/product.model"); 
 
 async function startProductConsumer() {
-  const connection = await amqp.connect("amqp://localhost");
-  const channel = await connection.createChannel();
 
-  await channel.assertExchange("product_events", "fanout", { durable: false });
-
-  const q = await channel.assertQueue("", { exclusive: true });
-  channel.bindQueue(q.queue, "product_events", "");
-
-  channel.consume(q.queue, async (msg) => {
-    const event = JSON.parse(msg.content.toString());
-    const { eventType, data } = event;
-
-    console.log("Received:", eventType);
-
-    if (eventType === "PRODUCT_CREATED") {
-      await SellerProduct.create(data);
-    }
-
-    if (eventType === "PRODUCT_SELLER_DASHBOARD.PRODUCT_UPDATED") {
-      await SellerProduct.findOneAndUpdate(
-        { _id: data._id },
-        data,
-        { upsert: true }
-      );
-    }
-
-    if (eventType === "PRODUCT_DELETED") {
-      await SellerProduct.deleteOne({ _id: data._id });
-    }
+  // Listen for product created
+  subscribeToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_CREATED", async (data) => {
+    console.log("📥 PRODUCT_CREATED received");
+    await productModel.create(data);
   });
+
+  // Listen for product updated
+  subscribeToQueue("PRODUCT_UPDATED", async (data) => {
+    console.log("📥 PRODUCT_UPDATED received");
+    await productModel.findOneAndUpdate(
+      { _id: data._id },
+      data,
+      { upsert: true }
+    );
+  });
+
+  // Listen for product deleted
+  subscribeToQueue("PRODUCT_DELETED", async (data) => {
+    console.log("📥 PRODUCT_DELETED received");
+    await SellerProduct.deleteOne({ _id: data._id });
+  });
+
+  console.log("📡 Seller Dashboard Product Consumer is running...");
 }
 
 module.exports = startProductConsumer;

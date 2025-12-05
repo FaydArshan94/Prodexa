@@ -42,7 +42,7 @@ export function AIChatWidget() {
 
 
 
-  if(!auth.isAuthenticated) {
+  if(!auth.isAuthenticated || auth.user?.role === "seller") {
     return null;
   }
 

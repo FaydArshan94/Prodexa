@@ -1,51 +1,52 @@
 const amqplib = require("amqplib");
 
-let channel, connection;
+let channel;
+let connection;
 
 async function connect() {
-  if (connection) return connection;
-
   try {
+    if (channel) return channel; // already connected
+
     connection = await amqplib.connect(process.env.RABBIT_URL);
-    console.log("Connected to RabbitMQ");
+    console.log("🐇 Connected to RabbitMQ");
+
     channel = await connection.createChannel();
-  } catch (error) {
-    console.error("Error conection to RabbitMQ :", error);
+    return channel;
+  } catch (err) {
+    console.error("❌ RabbitMQ Connection Error:", err);
   }
 }
 
+// --------------------- PUBLISH ----------------------
 async function publishToQueue(queueName, data = {}) {
-  if (!channel || !connection) await connect();
+  const ch = await connect();
 
-  await channel.assertQueue(queueName, {
-    durable: true,
-  });
+  await ch.assertQueue(queueName, { durable: true });
 
-  channel.sendToQueue(queueName, Buffer.from(JSON.stringify(data)));
-  console.log("Message sent to queue", queueName, data);
+  ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)));
+
+  console.log("📤 Message sent →", queueName, data);
 }
 
-async function subscribeToQueue(queueName, callBack) {
-  if (!channel || !connection) await connect();
+// --------------------- SUBSCRIBE ----------------------
+async function subscribeToQueue(queueName, callback) {
+  const ch = await connect();
 
-  await channel.assertQueue(queueName, {
-    durable: true,
-  });
+  await ch.assertQueue(queueName, { durable: true });
 
-  channel.consume(queueName, async (msg) => {
-    if (msg !== null) {
-      const data = JSON.parse(msg.content.toString());
+  ch.consume(queueName, async (msg) => {
+    if (!msg) return;
 
-      await callBack(data);
-      channel.ack(msg);
-    }
+    const content = JSON.parse(msg.content.toString());  // FIXED
+    console.log("📥 Message received ←", queueName, content);
+
+    await callback(content);
+    ch.ack(msg);
   });
 }
 
 module.exports = {
-  channel,
-  connection,
   connect,
   publishToQueue,
-  subscribeToQueue
+  subscribeToQueue,
 };

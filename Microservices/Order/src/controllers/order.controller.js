@@ -88,11 +88,14 @@ async function createOrder(req, res) {
       },
       paymentMethod: {
         type: req.body.paymentMethod.type, // 'COD' or 'RAZORPAY'
-        details: req.body.paymentMethod.type === 'RAZORPAY' ? {
-          method: req.body.paymentMethod.details?.method, // 'card', 'upi', 'netbanking'
-          last4: req.body.paymentMethod.details?.last4, // Last 4 digits if card
-          bank: req.body.paymentMethod.details?.bank, // Bank name if applicable
-        } : null
+        details:
+          req.body.paymentMethod.type === "RAZORPAY"
+            ? {
+                method: req.body.paymentMethod.details?.method, // 'card', 'upi', 'netbanking'
+                last4: req.body.paymentMethod.details?.last4, // Last 4 digits if card
+                bank: req.body.paymentMethod.details?.bank, // Bank name if applicable
+              }
+            : null,
       },
     });
 
@@ -102,7 +105,16 @@ async function createOrder(req, res) {
       },
     });
 
-    publishToQueue("ORDER_SELLER_DASHBOARD.ORDER_CREATED", order);
+    publishToQueue("ORDER_CREATED", {
+      _id: order._id, // ⭐ REQUIRED ⭐
+      user: user.id,
+      items: orderItems,
+      status: order.status,
+      totalPrice: order.totalPrice,
+      shippingAddress: order.shippingAddress, // ⭐ SEND COMPLETE ADDRESS ⭐
+      paymentMethod: order.paymentMethod,
+      createdAt: order.createdAt,
+    });
 
     res.status(201).json({ message: "Order created successfully", order });
   } catch (error) {
@@ -205,6 +217,8 @@ async function updateOrderAddress(req, res) {
     order.shippingAddress = { street, city, state, pincode, country };
     await order.save();
 
+    publishToQueue("ORDER_UPDATED", order);
+
     res.status(200).json({
       message: "Shipping address updated successfully",
       order,
@@ -256,6 +270,8 @@ async function cancelOrder(req, res) {
     order.status = "Cancelled";
     order.cancelledAt = new Date();
     await order.save();
+
+    publishToQueue("ORDER_CANCELLED", { _id: order._id });
 
     res.status(200).json({
       message: "Order cancelled successfully",
