@@ -22,7 +22,7 @@ export default function HeroSection() {
   };
 
   useEffect(() => {
-    getUser();
+    fetchCurrentUser();
     fetchProducts()
   }, []);
 

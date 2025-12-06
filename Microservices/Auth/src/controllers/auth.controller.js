@@ -21,12 +21,11 @@ async function registerUser(req, res) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-
+    // FIXED: Don't hash here - let the model's pre-save hook handle it
     const user = await userModel.create({
       username,
       email,
-      password: hashed,
+      password: password, // Pass plain password - model will hash it
       fullName: {
         firstName: fullName?.firstName || "",
         lastName: fullName?.lastName || "",
@@ -58,18 +57,25 @@ async function registerUser(req, res) {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
     });
 
   } catch (err) {
     console.error("Register error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 }
 
@@ -77,17 +83,31 @@ async function registerUser(req, res) {
 async function loginUser(req, res) {
   try {
     const { email, username, password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
     const user = await userModel
       .findOne({ $or: [{ email }, { username }] })
       .select("+password");
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password || "");
+    if (!user.password) {
+      console.error('User has no password in database:', user._id);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // FIXED: Use the model's comparePassword method consistently
+    const isPasswordValid = await user.comparePassword(password);
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -101,11 +121,14 @@ async function loginUser(req, res) {
         expiresIn: "1d",
       }
     );
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
+
     res.status(200).json({
       message: "Login successful",
       token,
@@ -120,7 +143,7 @@ async function loginUser(req, res) {
     });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
@@ -135,12 +158,13 @@ async function logoutUser(req, res) {
   const token = req.cookies.token;
 
   if (token) {
-    await redis.set(`blacklist_${token}`, "true", "EX", 24 * 60 * 60); // 1 day expiration
+    await redis.set(`blacklist_${token}`, "true", "EX", 24 * 60 * 60);
   }
 
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   return res.status(200).json({ message: "Logout successful" });
 }
@@ -211,7 +235,7 @@ async function getUserById(req, res) {
   try {
     const user = await userModel
       .findById(req.params.id)
-      .select("username email"); // Public fields only
+      .select("username email");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -253,7 +277,11 @@ async function changePassword(req, res) {
 
     const user = await userModel.findById(userId).select("+password");
 
-    // Verify current password
+    if (!user || !user.password) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Verify current password using model method
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
       return res
@@ -261,11 +289,13 @@ async function changePassword(req, res) {
         .json({ success: false, message: "Current password is incorrect" });
     }
 
+    // FIXED: Set plain password - pre-save hook will hash it
     user.password = newPassword;
     await user.save();
 
     res.json({ success: true, message: "Password updated successfully" });
   } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 }
