@@ -8,7 +8,7 @@ async function createOrder(req, res) {
   const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
 
   try {
-    const cartResponse = await axios.get("http://localhost:3002/api/cart/", {
+    const cartResponse = await axios.get("https://prodexa-cart.onrender.com/api/cart/", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -25,7 +25,7 @@ async function createOrder(req, res) {
       cartResponse.data.cart.items.map(async (item) => {
         return (
           await axios.get(
-            `http://localhost:3001/api/products/${item.productId}`,
+            `https://prodexa-product.onrender.com/api/products/${item.productId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -99,7 +99,7 @@ async function createOrder(req, res) {
       },
     });
 
-    await axios.delete("http://localhost:3002/api/cart/clearCart", {
+    await axios.delete("https://prodexa-cart.onrender.com/api/cart/clearCart", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

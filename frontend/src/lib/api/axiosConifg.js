@@ -3,9 +3,9 @@ import axios from 'axios'
 // Base URLs for different services
 export const API_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_API || 'https://prodexa-auth.onrender.com',
-  product: process.env.NEXT_PUBLIC_PRODUCT_API || 'http://localhost:3001/api/products',
-  cart: process.env.NEXT_PUBLIC_CART_API || 'http://localhost:3002/api/cart',
-  order: process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:3003/api/orders',
+  product: process.env.NEXT_PUBLIC_PRODUCT_API || 'https://prodexa-product.onrender.com/api/products',
+  cart: process.env.NEXT_PUBLIC_CART_API || 'https://prodexa-cart.onrender.com/api/cart',
+  order: process.env.NEXT_PUBLIC_ORDER_API || 'https://prodexa-order.onrender.com/api/orders',
   payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'http://localhost:3004/api/payments',
   notification: process.env.NEXT_PUBLIC_NOTIFICATION_API || 'http://localhost:3006',
   aiBuddy: process.env.NEXT_PUBLIC_AI_BUDDY_API || 'http://localhost:3007',
