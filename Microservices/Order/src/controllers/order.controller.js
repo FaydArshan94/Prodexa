@@ -1,45 +1,59 @@
 const orderModel = require("../models/order.model");
 const { publishToQueue } = require("../broker/broker");
-
 const axios = require("axios");
 
 async function createOrder(req, res) {
-  const user = req.user; // Assuming user info is attached to req object
+  const user = req.user;
   const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
 
-  try {
-    const cartResponse = await axios.get("https://prodexa-cart.onrender.com/api/cart/", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  console.log('📦 Creating order for user:', user.id);
 
-    if (!cartResponse.data.cart) {
+  try {
+    // FIXED: Correct Cart API URL
+    console.log('🛒 Fetching cart...');
+    const cartResponse = await axios.get(
+      "https://prodexa-cart.onrender.com/api/cart",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log('✅ Cart fetched:', cartResponse.data);
+
+    if (!cartResponse.data.cart || !cartResponse.data.cart.items || cartResponse.data.cart.items.length === 0) {
+      console.log('❌ Cart is empty');
       return res.status(400).json({
         success: false,
         message: "Cart is empty or not found",
       });
     }
 
+    console.log('📦 Fetching product details...');
     const products = await Promise.all(
       cartResponse.data.cart.items.map(async (item) => {
-        return (
-          await axios.get(
-            `https://prodexa-product.onrender.com/api/products/${item.productId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          )
-        ).data.data;
+        try {
+          const productResponse = await axios.get(
+            `https://prodexa-product.onrender.com/api/products/${item.productId}`
+          );
+          return productResponse.data.data;
+        } catch (error) {
+          console.error(`Failed to fetch product ${item.productId}:`, error.message);
+          throw new Error(`Product ${item.productId} not found`);
+        }
       })
     );
 
-    let priceAmount = 0;
+    console.log('✅ Products fetched:', products.length);
 
+    let priceAmount = 0;
     const orderItems = cartResponse.data.cart.items.map((item) => {
       const product = products.find((p) => p._id === item.productId);
+
+      if (!product) {
+        throw new Error(`Product ${item.productId} not found`);
+      }
 
       if (product.stock < item.quantity) {
         throw new Error(
@@ -49,6 +63,7 @@ async function createOrder(req, res) {
 
       const itemTotal = product.price.amount * item.quantity;
       priceAmount += itemTotal;
+
       return {
         product: {
           _id: product._id,
@@ -65,11 +80,23 @@ async function createOrder(req, res) {
       };
     });
 
+    // Validate shipping address
+    if (!req.body.shippingAddress) {
+      return res.status(400).json({ message: "Shipping address is required" });
+    }
+
+    const { street, city, state, pincode, country } = req.body.shippingAddress;
+
+    if (!street || !city || !state || !pincode || !country) {
+      return res.status(400).json({ message: "Incomplete shipping address" });
+    }
+
     // Validate payment method
     if (!req.body.paymentMethod || !req.body.paymentMethod.type) {
       return res.status(400).json({ message: "Payment method is required" });
     }
 
+    console.log('💾 Creating order in database...');
     const order = await orderModel.create({
       user: user.id,
       items: orderItems,
@@ -78,58 +105,79 @@ async function createOrder(req, res) {
         amount: priceAmount,
         currency: "INR",
       },
-      status: "Pending",
       shippingAddress: {
-        street: req.body.shippingAddress.street,
-        city: req.body.shippingAddress.city,
-        state: req.body.shippingAddress.state,
-        pincode: req.body.shippingAddress.pincode,
-        country: req.body.shippingAddress.country,
+        street,
+        city,
+        state,
+        pincode,
+        country,
       },
       paymentMethod: {
-        type: req.body.paymentMethod.type, // 'COD' or 'RAZORPAY'
+        type: req.body.paymentMethod.type,
         details:
           req.body.paymentMethod.type === "RAZORPAY"
             ? {
-                method: req.body.paymentMethod.details?.method, // 'card', 'upi', 'netbanking'
-                last4: req.body.paymentMethod.details?.last4, // Last 4 digits if card
-                bank: req.body.paymentMethod.details?.bank, // Bank name if applicable
+                method: req.body.paymentMethod.details?.method,
+                last4: req.body.paymentMethod.details?.last4,
+                bank: req.body.paymentMethod.details?.bank,
               }
             : null,
       },
     });
 
-    await axios.delete("https://prodexa-cart.onrender.com/api/cart/clearCart", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    console.log('✅ Order created:', order._id);
 
-    publishToQueue("ORDER_CREATED", {
-      _id: order._id, // ⭐ REQUIRED ⭐
+    // Clear cart
+    console.log('🗑️ Clearing cart...');
+    try {
+      await axios.delete(
+        "https://prodexa-cart.onrender.com/api/cart/clearCart",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('✅ Cart cleared');
+    } catch (error) {
+      console.error('⚠️ Failed to clear cart:', error.message);
+      // Continue even if cart clear fails
+    }
+
+    // Publish event
+    console.log('📢 Publishing ORDER_CREATED event...');
+    await publishToQueue("ORDER_CREATED", {
+      _id: order._id,
       user: user.id,
       items: orderItems,
       status: order.status,
       totalPrice: order.totalPrice,
-      shippingAddress: order.shippingAddress, // ⭐ SEND COMPLETE ADDRESS ⭐
+      shippingAddress: order.shippingAddress,
       paymentMethod: order.paymentMethod,
       createdAt: order.createdAt,
     });
 
-    res.status(201).json({ message: "Order created successfully", order });
+    console.log('✅ Order creation complete');
+    res.status(201).json({ 
+      message: "Order created successfully", 
+      order 
+    });
   } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("❌ Error creating order:", error);
+    console.error("Error stack:", error.stack);
+    
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
 
 async function getOrders(req, res) {
   const user = req.user;
-  const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
-
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
-
   const skip = (page - 1) * limit;
 
   try {
@@ -137,7 +185,9 @@ async function getOrders(req, res) {
       .find({ user: user.id })
       .skip(skip)
       .limit(limit)
+      .sort({ createdAt: -1 })
       .exec();
+
     const totalOrders = await orderModel.countDocuments({ user: user.id });
 
     res.status(200).json({
@@ -183,7 +233,7 @@ async function getOrderById(req, res) {
 async function updateOrderAddress(req, res) {
   const user = req.user;
   const orderId = req.params.id;
-  const shippingAddress = req.body.shippingAddress || req.body; // ✅ handles both formats
+  const shippingAddress = req.body.shippingAddress || req.body;
 
   try {
     const order = await orderModel.findOne({ _id: orderId });
@@ -199,16 +249,13 @@ async function updateOrderAddress(req, res) {
 
     const { street, city, state, pincode, country } = shippingAddress;
 
-    // ✅ pincode validation first
     const pincodeStr = String(pincode);
     if (!pincodeStr || pincodeStr.length !== 6 || !/^\d+$/.test(pincodeStr))
       return res.status(400).json({ message: "Invalid pincode" });
 
-    // Other field validations
     if (!street || !city || !state || !country)
       return res.status(400).json({ message: "Invalid address data" });
 
-    // ✅ Only allow updates for Pending orders
     if (order.status !== "Pending")
       return res
         .status(400)
@@ -217,7 +264,7 @@ async function updateOrderAddress(req, res) {
     order.shippingAddress = { street, city, state, pincode, country };
     await order.save();
 
-    publishToQueue("ORDER_UPDATED", order);
+    await publishToQueue("ORDER_UPDATED", order);
 
     res.status(200).json({
       message: "Shipping address updated successfully",
@@ -233,15 +280,18 @@ async function cancelOrder(req, res) {
   const user = req.user;
   const orderId = req.params.id;
   const { reason } = req.body;
+
   try {
     if (!orderId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: "Invalid order ID" });
     }
+
     if (!reason || reason.trim() === "") {
       return res
         .status(400)
         .json({ message: "Cancellation reason is required" });
     }
+
     const order = await orderModel.findOne({ _id: orderId });
 
     if (!order) return res.status(404).json({ message: "Order not found" });
@@ -271,7 +321,7 @@ async function cancelOrder(req, res) {
     order.cancelledAt = new Date();
     await order.save();
 
-    publishToQueue("ORDER_CANCELLED", { _id: order._id });
+    await publishToQueue("ORDER_CANCELLED", { _id: order._id });
 
     res.status(200).json({
       message: "Order cancelled successfully",
