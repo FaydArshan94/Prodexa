@@ -147,7 +147,7 @@ export default function Navbar() {
             )}
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               {!auth.isAuthenticated ? (
                 <Button variant="ghost" className="gap-2">
                   <User className="h-5 w-5" />
@@ -161,14 +161,16 @@ export default function Navbar() {
                 </Button>
               ) : (
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" className="gap-2">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost">
                     <Link
                       href="/profile"
                       onClick={() => setSearchTerm("")}
-                      className="hidden md:inline"
+                      className="flex gap-1 items-center justify-between  "
                     >
-                      {auth.user?.username}
+                      <User className="h-5 w-5  " />
+                      <span className="hidden md:inline">
+                        {auth.user?.username.slice(0, 5)}
+                      </span>
                     </Link>
                   </Button>
 
@@ -183,17 +185,19 @@ export default function Navbar() {
               )}
 
               {/* Cart Button */}
-              <Link
-                href="/cart"
-                onClick={() => setSearchTerm("")}
-                className="relative flex items-center gap-2"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {/* <span className="hidden md:inline"></span> */}
-                <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
-                  {cart.length || 0}
-                </span>
-              </Link>
+              <Button variant="ghost">
+                <Link
+                  href="/cart"
+                  onClick={() => setSearchTerm("")}
+                  className="relative flex items-center gap-2"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {/* <span className="hidden md:inline"></span> */}
+                  <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
+                    {cart.length || 0}
+                  </span>
+                </Link>
+              </Button>
 
               {/* Mobile Menu */}
               {/* <Button variant="ghost" className="md:hidden">
