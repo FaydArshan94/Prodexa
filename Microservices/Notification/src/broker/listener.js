@@ -5,7 +5,7 @@ module.exports = function () {
   console.log("🎧 Setting up queue listeners...");
 
   // ✅ User Registration
-  subscribeToQueue("AUTH_NOTIFICATION.USER_CREATED", async (data) => {
+  subscribeToQueue("NOTIF_AUTH.USER_CREATED", async (data) => {
     console.log("📧 Sending welcome email to:", data.email);
 
     const emailHTMLTemplate = `

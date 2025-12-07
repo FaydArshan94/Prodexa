@@ -34,7 +34,7 @@ async function registerUser(req, res) {
     });
 
     // publish events
-    await publishToQueue("AUTH_NOTIFICATION.USER_CREATED", {
+    await publishToQueue("NOTIF_AUTH.USER_CREATED", {
       id: user._id,
       username: user.username,
       email: user.email,
