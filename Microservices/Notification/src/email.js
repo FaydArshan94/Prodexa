@@ -1,38 +1,47 @@
+// ============================================
+// FILE: email.js
+// Location: Microservices/Notification/src/email.js
+// ============================================
+
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-console.log('📧 Email Configuration:');
+console.log('📧 Initializing Email Service...');
 console.log('   EMAIL_USER:', process.env.EMAIL_USER ? 'Set ✅' : 'NOT SET ❌');
 console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? 'Set ✅' : 'NOT SET ❌');
 
-// Use App Password instead of OAuth2 (much simpler!)
+// Create transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // Your Gmail
-    pass: process.env.EMAIL_PASS, // Gmail App Password (NOT your regular password!)
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
-// Verify the connection configuration
+// Verify connection
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ Error connecting to email server:', error);
-    console.error('💡 Make sure you have:');
-    console.error('   1. Set EMAIL_USER and EMAIL_PASS in environment variables');
-    console.error('   2. Generated an App Password in Gmail settings');
-    console.error('   3. Enabled 2-Step Verification in your Google account');
+    console.error('❌ Email server connection failed:', error.message);
+    console.error('💡 Check:');
+    console.error('   1. EMAIL_USER and EMAIL_PASS are set');
+    console.error('   2. Using Gmail App Password (not regular password)');
+    console.error('   3. 2-Step Verification enabled');
   } else {
-    console.log('✅ Email server is ready to send messages');
+    console.log('✅ Email server ready to send messages');
   }
 });
 
-// Function to send email
-const sendEmail = async (to, subject, text, html) => {
+// Send email function
+async function sendEmail(to, subject, text, html) {
   try {
     console.log(`📧 Sending email...`);
     console.log(`   To: ${to}`);
     console.log(`   Subject: ${subject}`);
+    
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      throw new Error('Email credentials not configured');
+    }
     
     const info = await transporter.sendMail({
       from: `"Prodexa" <${process.env.EMAIL_USER}>`,
@@ -46,14 +55,15 @@ const sendEmail = async (to, subject, text, html) => {
     console.log('   Message ID:', info.messageId);
     return info;
   } catch (error) {
-    console.error('❌ Error sending email:', error.message);
+    console.error('❌ Failed to send email:', error.message);
+    console.error('   Error details:', error);
     throw error;
   }
+}
+
+// Export using module.exports
+module.exports = {
+  sendEmail
 };
 
-module.exports = { sendEmail };
-
-
-// ============================================
-// FILE 4: app.js (IMPROVED ERROR HANDLING)
-// ============================================
+console.log('📧 Email module loaded, sendEmail function exported');
