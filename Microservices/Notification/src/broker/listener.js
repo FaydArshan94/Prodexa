@@ -1,5 +1,5 @@
 const { subscribeToQueue } = require("./broker");
-const { sendEmail } = require("../email");
+const { sendWelcomeEmail  } = require("../email");
 
 module.exports = function () {
   console.log('🎧 Setting up queue listeners...');
@@ -25,7 +25,7 @@ module.exports = function () {
     `;
 
     try {
-      await sendEmail(
+      await sendWelcomeEmail (
         data.email,
         "Welcome to Prodexa",
         "Thank you for registering with us!",
@@ -64,7 +64,7 @@ module.exports = function () {
     `;
     
     try {
-      await sendEmail(
+      await sendWelcomeEmail (
         data.email,
         "Payment Successful - Prodexa",
         "We have received your payment",
@@ -99,7 +99,7 @@ module.exports = function () {
     `;
     
     try {
-      await sendEmail(
+      await sendWelcomeEmail (
         data.email,
         "Payment Failed - Prodexa",
         "Your payment could not be processed",
@@ -134,7 +134,7 @@ module.exports = function () {
     `;
     
     try {
-      await sendEmail(
+      await sendWelcomeEmail (
         data.email,
         "Product Created Successfully - Prodexa",
         "Your product is now live",
