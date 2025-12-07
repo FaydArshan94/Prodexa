@@ -25,13 +25,14 @@ module.exports = function () {
     `;
 
     try {
-      await sendWelcomeEmail({
+      const result = await sendWelcomeEmail({
         email: data.email,
         subject: "Welcome to Prodexa",
         html: emailHTMLTemplate,
       });
+      console.log("✅ Welcome email sent successfully:", result?.id);
     } catch (error) {
-      console.error("❌ Failed to send welcome email:", error);
+      console.error("❌ Failed to send welcome email:", error.message);
     }
   });
 
