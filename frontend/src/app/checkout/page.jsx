@@ -79,128 +79,141 @@ export default function CheckoutPage() {
   };
 
   const initializeRazorpayPayment = async (orderId) => {
-    let paymentSuccessful = false; // Track payment status
+  let paymentSuccessful = false;
 
-    try {
-      const response = await axios.post(
-        `${API_URLS.payment}/create/${orderId}`,
-        {},
-        { withCredentials: true }
-      );
+  try {
+    console.log('🔄 Creating payment for order:', orderId);
+    
+    // Use the API function with proper token handling
+    const token = localStorage.getItem('token');
+    
+    const response = await axios.post(
+      `${API_URLS.payment}/create/${orderId}`,
+      {},
+      {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-      const { payment } = response.data;
+    console.log('✅ Payment created:', response.data);
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: payment.price.amount,
-        currency: payment.price.currency,
-        name: "Prodexa",
-        description: "Order payment",
-        order_id: payment.razorpayOrderId,
+    const { payment } = response.data;
 
-        // Success handler - ONLY runs when payment succeeds
-        handler: async (response) => {
-          paymentSuccessful = true; // Mark as successful
-          console.log("Payment successful, verifying...", response);
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: payment.price.amount, // Amount is already in paise from backend
+      currency: payment.price.currency,
+      name: "Prodexa",
+      description: "Order payment",
+      order_id: payment.razorpayOrderId,
 
-          try {
-            console.log("Starting verification API call...");
+      handler: async (response) => {
+        paymentSuccessful = true;
+        console.log("💳 Payment successful, verifying...", response);
 
-            // Verify payment
-            const verifyResponse = await axios.post(
-              `${API_URLS.payment}/verify`,
-              {
-                razorpayOrderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                paymentDetails: {
-                  method: response.payment?.method,
-                  bank: response.payment?.bank,
-                  last4: response.payment?.card?.last4 || null,
-                },
+        try {
+          console.log("🔐 Starting verification...");
+
+          const verifyResponse = await axios.post(
+            `${API_URLS.payment}/verify`,
+            {
+              razorpayOrderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              paymentDetails: {
+                method: response.payment?.method,
+                bank: response.payment?.bank,
+                last4: response.payment?.card?.last4 || null,
               },
-              { withCredentials: true }
-            );
+            },
+            {
+              withCredentials: true,
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
 
-            console.log("Payment verified successfully", verifyResponse.data);
+          console.log("✅ Payment verified successfully", verifyResponse.data);
 
-            // Clear cart
-            console.log("Clearing cart...");
-            dispatch(clearCart());
+          // Clear cart
+          console.log("🗑️ Clearing cart...");
+          dispatch(clearCart());
 
-            console.log("Redirecting to order page...");
+          console.log("🎉 Redirecting to order page...");
 
-            // Force redirect with a small delay
-            setTimeout(() => {
-              window.location.href = `/orders/${orderId}`;
-            }, 500);
-          } catch (error) {
-            console.error("Payment verification failed:", error);
-            console.error(
-              "Error details:",
-              error.response?.data || error.message
-            );
+          // Redirect
+          setTimeout(() => {
+            window.location.href = `/orders/${orderId}`;
+          }, 500);
+        } catch (error) {
+          console.error("❌ Payment verification failed:", error);
+          console.error("Error details:", error.response?.data || error.message);
 
-            // Still redirect to orders page
+          alert(
+            "Payment successful but verification pending. Check your order status."
+          );
+          setTimeout(() => {
+            window.location.href = `/orders/${orderId}`;
+          }, 500);
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          console.log("Payment modal was closed");
+
+          if (!paymentSuccessful) {
+            console.log("Payment was cancelled or failed");
             alert(
-              "Payment successful but verification pending. Check your order status."
+              "Payment cancelled. Your order is created but payment is pending."
             );
-            setTimeout(() => {
-              window.location.href = `/orders/${orderId}`;
-            }, 500);
+            setIsPlacingOrder(false);
+            router.push(`/orders/${orderId}`);
           }
         },
+      },
 
-        // Modal dismissed handler - runs when user closes modal
-        modal: {
-          ondismiss: function () {
-            console.log("Payment modal was closed");
+      prefill: {
+        name: formData.name,
+        email: formData.email,
+        contact: formData.phone,
+      },
 
-            // Only handle if payment was NOT successful
-            if (!paymentSuccessful) {
-              console.log("Payment was cancelled or failed");
-              alert(
-                "Payment cancelled. Your order is created but payment is pending."
-              );
-              setIsPlacingOrder(false);
+      theme: {
+        color: "#2563eb",
+      },
+    };
 
-              // Redirect to orders page to show pending status
-              router.push(`/orders/${orderId}`);
-            }
-            // If payment was successful, the handler will take care of redirect
-          },
-        },
+    const rzp = new window.Razorpay(options);
 
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.phone,
-        },
-
-        theme: {
-          color: "#2563eb",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-
-      // Handle payment failures
-      rzp.on("payment.failed", function (response) {
-        console.error("Payment failed:", response.error);
-        alert(`Payment failed: ${response.error.description}`);
-        setIsPlacingOrder(false);
-
-        // Don't redirect automatically on failure
-        // Let user try again or close modal
-      });
-
-      rzp.open();
-    } catch (error) {
-      console.error("Failed to initialize payment:", error);
-      alert("Failed to initialize payment. Please try again.");
+    rzp.on("payment.failed", function (response) {
+      console.error("❌ Payment failed:", response.error);
+      alert(`Payment failed: ${response.error.description}`);
       setIsPlacingOrder(false);
+    });
+
+    rzp.open();
+  } catch (error) {
+    console.error("❌ Failed to initialize payment:", error);
+    console.error("Error response:", error.response?.data);
+    
+    // Check if it's an authentication error
+    if (error.response?.status === 401) {
+      alert("Session expired. Please login again.");
+      router.push('/login');
+    } else {
+      alert("Failed to initialize payment. Please try again.");
     }
-  };
+    
+    setIsPlacingOrder(false);
+  }
+};
 
   const handlePlaceOrder = async () => {
     if (isPlacingOrder) return;
