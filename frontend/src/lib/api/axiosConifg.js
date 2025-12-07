@@ -6,7 +6,7 @@ export const API_URLS = {
   product: process.env.NEXT_PUBLIC_PRODUCT_API || 'https://prodexa-product.onrender.com/api/products',
   cart: process.env.NEXT_PUBLIC_CART_API || 'https://prodexa-cart.onrender.com/api/cart',
   order: process.env.NEXT_PUBLIC_ORDER_API || 'https://prodexa-order.onrender.com/api/orders',
-  payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'http://localhost:3004/api/payments',
+  payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'https://prodexa-payment.onrender.com/api/payments',
   notification: process.env.NEXT_PUBLIC_NOTIFICATION_API || 'http://localhost:3006',
   aiBuddy: process.env.NEXT_PUBLIC_AI_BUDDY_API || 'http://localhost:3007',
   seller: process.env.NEXT_PUBLIC_SELLER_API || 'http://localhost:3008',
