@@ -40,6 +40,8 @@ async function sendEmail({ email, subject, html, replyTo = "support@prodexa.com"
       replyTo,
     });
 
+    console.log("📥 Resend Response:", JSON.stringify(response));
+
     // Check for Resend API errors
     if (response.error) {
       console.error("❌ Resend API Error:", {
@@ -50,8 +52,14 @@ async function sendEmail({ email, subject, html, replyTo = "support@prodexa.com"
       throw new Error(`Resend Error: ${response.error.message}`);
     }
 
+    // Check if we got a valid response
+    if (!response || typeof response !== 'object') {
+      console.error("❌ Invalid Resend response:", response);
+      throw new Error("Invalid response from Resend API");
+    }
+
     console.log("✅ Email sent successfully", {
-      messageId: response.id,
+      messageId: response.id || "pending",
       intendedRecipient: email,
       actualRecipient: recipientEmail,
       mode: isSandboxMode ? "SANDBOX" : "PRODUCTION",

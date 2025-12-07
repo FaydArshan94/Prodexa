@@ -53,13 +53,17 @@ module.exports = function () {
   // ✅ Payment Completed
   subscribeToQueue("PAYMENT.NOTIFICATION_COMPLETED", async (data) => {
     try {
+      console.log("📋 Full payment data received:", JSON.stringify(data));
+
       if (!data.email || !data.username || !data.orderId) {
-        throw new Error("Invalid payment data");
+        throw new Error("Invalid payment data: missing email, username, or orderId");
       }
 
       console.log("📧 Processing payment confirmation for:", data.username);
 
-      const amount = data.amount ? (data.amount / 100).toFixed(2) : "0.00";
+      // Handle missing amount/currency gracefully
+      const amount = data.amount ? (data.amount / 100).toFixed(2) : "N/A";
+      const currency = data.currency || "INR";
 
       const emailHTMLTemplate = `
         <!DOCTYPE html>
@@ -74,7 +78,7 @@ module.exports = function () {
               <p style="font-size: 16px; color: #333;">Dear <strong>${data.username}</strong>,</p>
               <p style="font-size: 14px; color: #666; line-height: 1.6;">We have successfully received your payment!</p>
               <div style="background: #f0fdf4; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #16a34a;">
-                <p style="margin: 8px 0; font-size: 14px;"><strong>💰 Amount:</strong> ${data.currency || "INR"} ${amount}</p>
+                ${amount !== "N/A" ? `<p style="margin: 8px 0; font-size: 14px;"><strong>💰 Amount:</strong> ${currency} ${amount}</p>` : ""}
                 <p style="margin: 8px 0; font-size: 14px;"><strong>📦 Order ID:</strong> ${data.orderId}</p>
                 ${data.paymentId ? `<p style="margin: 8px 0; font-size: 14px;"><strong>🔐 Payment ID:</strong> ${data.paymentId}</p>` : ""}
               </div>
@@ -86,7 +90,7 @@ module.exports = function () {
         </html>
       `;
 
-      await sendWelcomeEmail({
+      const result = await sendWelcomeEmail({
         email: data.email,
         subject: `Payment Confirmation - Order #${data.orderId}`,
         html: emailHTMLTemplate,
@@ -95,8 +99,7 @@ module.exports = function () {
       console.log("✅ Payment email processed successfully for:", data.email);
     } catch (error) {
       console.error("❌ Payment confirmation email failed:", {
-        user: data.username,
-        orderId: data.orderId,
+        data,
         error: error.message,
       });
     }
