@@ -63,12 +63,11 @@ module.exports = function () {
     `;
 
     try {
-      await sendWelcomeEmail(
-        data.email,
-        "Payment Successful - Prodexa",
-        "We have received your payment",
-        emailHTMLTemplate
-      );
+      await sendWelcomeEmail({
+        email: data.email,
+        subject: "Payment Successful - Prodexa",
+        html: emailHTMLTemplate,
+      });
     } catch (error) {
       console.error("❌ Failed to send payment confirmation:", error);
     }
@@ -98,12 +97,11 @@ module.exports = function () {
     `;
 
     try {
-      await sendWelcomeEmail(
-        data.email,
-        "Payment Failed - Prodexa",
-        "Your payment could not be processed",
-        emailHTMLTemplate
-      );
+      await sendWelcomeEmail({
+        email: data.email,
+        subject: "Payment Failed - Prodexa",
+        html: emailHTMLTemplate,
+      });
     } catch (error) {
       console.error("❌ Failed to send payment failure email:", error);
     }
@@ -133,12 +131,11 @@ module.exports = function () {
     `;
 
     try {
-      await sendWelcomeEmail(
-        data.email,
-        "Product Created Successfully - Prodexa",
-        "Your product is now live",
-        emailHTMLTemplate
-      );
+      await sendWelcomeEmail({
+        email: data.email,
+        subject: "Product Created Successfully - Prodexa",
+        html: emailHTMLTemplate,
+      });
     } catch (error) {
       console.error("❌ Failed to send product creation email:", error);
     }
