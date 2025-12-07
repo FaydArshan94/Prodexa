@@ -1,13 +1,13 @@
 const { subscribeToQueue } = require("./broker");
-const { sendWelcomeEmail  } = require("../email");
+const { sendWelcomeEmail } = require("../email");
 
 module.exports = function () {
-  console.log('🎧 Setting up queue listeners...');
+  console.log("🎧 Setting up queue listeners...");
 
   // ✅ User Registration
   subscribeToQueue("AUTH_NOTIFICATION.USER_CREATED", async (data) => {
-    console.log('📧 Sending welcome email to:', data.email);
-    
+    console.log("📧 Sending welcome email to:", data.email);
+
     const emailHTMLTemplate = `
       <!DOCTYPE html>
       <html>
@@ -25,23 +25,22 @@ module.exports = function () {
     `;
 
     try {
-      await sendWelcomeEmail (
-        data.email,
-        "Welcome to Prodexa",
-        "Thank you for registering with us!",
-        emailHTMLTemplate
-      );
+      await sendWelcomeEmail({
+        email: data.email,
+        subject: "Welcome to Prodexa",
+        html: emailHTMLTemplate,
+      });
     } catch (error) {
-      console.error('❌ Failed to send welcome email:', error);
+      console.error("❌ Failed to send welcome email:", error);
     }
   });
 
   // ✅ Payment Completed - FIXED QUEUE NAME (was PAYMENT_NOTIFICATION.PAYMENT_COMPLETED)
   subscribeToQueue("PAYMENT.NOTIFICATION_COMPLETED", async (data) => {
-    console.log('📧 Sending payment confirmation to:', data.email);
-    
+    console.log("📧 Sending payment confirmation to:", data.email);
+
     const amount = (data.amount / 100).toFixed(2); // Convert paise to rupees
-    
+
     const emailHTMLTemplate = `
       <!DOCTYPE html>
       <html>
@@ -62,23 +61,23 @@ module.exports = function () {
         </body>
       </html>
     `;
-    
+
     try {
-      await sendWelcomeEmail (
+      await sendWelcomeEmail(
         data.email,
         "Payment Successful - Prodexa",
         "We have received your payment",
         emailHTMLTemplate
       );
     } catch (error) {
-      console.error('❌ Failed to send payment confirmation:', error);
+      console.error("❌ Failed to send payment confirmation:", error);
     }
   });
 
   // ✅ Payment Failed - FIXED QUEUE NAME
   subscribeToQueue("PAYMENT.NOTIFICATION_FAILED", async (data) => {
-    console.log('📧 Sending payment failure notification to:', data.email);
-    
+    console.log("📧 Sending payment failure notification to:", data.email);
+
     const emailHTMLTemplate = `
       <!DOCTYPE html>
       <html>
@@ -97,23 +96,23 @@ module.exports = function () {
         </body>
       </html>
     `;
-    
+
     try {
-      await sendWelcomeEmail (
+      await sendWelcomeEmail(
         data.email,
         "Payment Failed - Prodexa",
         "Your payment could not be processed",
         emailHTMLTemplate
       );
     } catch (error) {
-      console.error('❌ Failed to send payment failure email:', error);
+      console.error("❌ Failed to send payment failure email:", error);
     }
   });
 
   // ✅ Product Created
   subscribeToQueue("PRODUCT_NOTIFICATION.PRODUCT_CREATED", async (data) => {
-    console.log('📧 Sending product creation notification to:', data.email);
-    
+    console.log("📧 Sending product creation notification to:", data.email);
+
     const emailHTMLTemplate = `
       <!DOCTYPE html>
       <html>
@@ -132,18 +131,18 @@ module.exports = function () {
         </body>
       </html>
     `;
-    
+
     try {
-      await sendWelcomeEmail (
+      await sendWelcomeEmail(
         data.email,
         "Product Created Successfully - Prodexa",
         "Your product is now live",
         emailHTMLTemplate
       );
     } catch (error) {
-      console.error('❌ Failed to send product creation email:', error);
+      console.error("❌ Failed to send product creation email:", error);
     }
   });
 
-  console.log('✅ All queue listeners are set up!');
+  console.log("✅ All queue listeners are set up!");
 };
