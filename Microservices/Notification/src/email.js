@@ -52,14 +52,16 @@ async function sendEmail({ email, subject, html, replyTo = "support@prodexa.com"
       throw new Error(`Resend Error: ${response.error.message}`);
     }
 
-    // Check if we got a valid response
-    if (!response || typeof response !== 'object') {
-      console.error("❌ Invalid Resend response:", response);
-      throw new Error("Invalid response from Resend API");
+    // Check if we got a valid response - Resend returns {data: {id}, error: null}
+    if (!response.data || !response.data.id) {
+      console.error("❌ Invalid Resend response - no message ID:", response);
+      throw new Error("Invalid response from Resend API - no message ID returned");
     }
 
+    const messageId = response.data.id;
+
     console.log("✅ Email sent successfully", {
-      messageId: response.id || "pending",
+      messageId: messageId,
       intendedRecipient: email,
       actualRecipient: recipientEmail,
       mode: isSandboxMode ? "SANDBOX" : "PRODUCTION",
