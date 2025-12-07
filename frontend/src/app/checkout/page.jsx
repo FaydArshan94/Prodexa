@@ -82,7 +82,7 @@ export default function CheckoutPage() {
   let paymentSuccessful = false;
 
   try {
-    console.log('🔄 Creating payment for order:', orderId);
+    // console.log('🔄 Creating payment for order:', orderId);
     
     // Use the API function with proper token handling
     const token = localStorage.getItem('token');
@@ -99,7 +99,7 @@ export default function CheckoutPage() {
       }
     );
 
-    console.log('✅ Payment created:', response.data);
+    // console.log('✅ Payment created:', response.data);
 
     const { payment } = response.data;
 
@@ -113,10 +113,10 @@ export default function CheckoutPage() {
 
       handler: async (response) => {
         paymentSuccessful = true;
-        console.log("💳 Payment successful, verifying...", response);
+        // console.log("💳 Payment successful, verifying...", response);
 
         try {
-          console.log("🔐 Starting verification...");
+          // console.log("🔐 Starting verification...");
 
           const verifyResponse = await axios.post(
             `${API_URLS.payment}/verify`,
@@ -139,17 +139,17 @@ export default function CheckoutPage() {
             }
           );
 
-          console.log("✅ Payment verified successfully", verifyResponse.data);
+          // console.log("✅ Payment verified successfully", verifyResponse.data);
 
           // Clear cart
-          console.log("🗑️ Clearing cart...");
+          // console.log("🗑️ Clearing cart...");
           dispatch(clearCart());
 
-          console.log("🎉 Redirecting to order page...");
+          // console.log("🎉 Redirecting to order page...");
 
           // Redirect
           setTimeout(() => {
-            window.location.href = `/orders/${orderId}`;
+            router.push(`/orders/${orderId}`);
           }, 500);
         } catch (error) {
           console.error("❌ Payment verification failed:", error);
@@ -159,17 +159,17 @@ export default function CheckoutPage() {
             "Payment successful but verification pending. Check your order status."
           );
           setTimeout(() => {
-            window.location.href = `/orders/${orderId}`;
+            router.push(`/orders/${orderId}`);
           }, 500);
         }
       },
 
       modal: {
         ondismiss: function () {
-          console.log("Payment modal was closed");
+          // console.log("Payment modal was closed");
 
           if (!paymentSuccessful) {
-            console.log("Payment was cancelled or failed");
+            // console.log("Payment was cancelled or failed");
             alert(
               "Payment cancelled. Your order is created but payment is pending."
             );
