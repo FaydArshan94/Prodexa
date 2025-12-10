@@ -100,7 +100,8 @@ async function getSellerProducts(req, res) {
     const sellerId = req.user.id;
 
     // ✅ Fetch directly from Product Service
-    const response = await axios.get(`http://localhost:3001/api/products/`, {
+    const productApiUrl = process.env.PRODUCT_SERVICE_URL || 'http://localhost:3001/api/products/';
+    const response = await axios.get(productApiUrl, {
       headers: {
         Authorization: req.headers.authorization, // Forward auth token
       },

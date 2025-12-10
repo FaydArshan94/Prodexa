@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_SELLER_API_URL || 'http://localhost:3007';
+const API_URL = process.env.NEXT_PUBLIC_SELLER_API || 'https://prodexa-seller-dashboard.onrender.com';
 
 // Get Seller Metrics
 export const getSellerMetrics = createAsyncThunk(

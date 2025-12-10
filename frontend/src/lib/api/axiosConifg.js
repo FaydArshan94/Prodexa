@@ -9,7 +9,7 @@ export const API_URLS = {
   payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'https://prodexa-payment.onrender.com/api/payments',
   notification: process.env.NEXT_PUBLIC_NOTIFICATION_API || 'http://localhost:3006',
   aiBuddy: process.env.NEXT_PUBLIC_AI_BUDDY_API || 'http://localhost:3007',
-  seller: process.env.NEXT_PUBLIC_SELLER_API || 'http://localhost:3008',
+  seller: process.env.NEXT_PUBLIC_SELLER_API || 'https://prodexa-seller-dashboard.onrender.com',
 }
 
 // Create axios instances for each service
