@@ -2,12 +2,27 @@ let io;
 const connectedUsers = new Set();
 
 const initializeSocket = (server) => {
+  // Use websocket only on production to avoid polling spam
+  const transports = process.env.NODE_ENV === 'production' 
+    ? ["websocket"] 
+    : ["websocket", "polling"];
+
   const socketIo = require("socket.io")(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      origin: [
+        process.env.FRONTEND_URL || "http://localhost:5173",
+        "https://prodexa-ten.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+      ],
       credentials: true,
       methods: ["GET", "POST"],
     },
+    transports,
+    pingInterval: 25000,
+    pingTimeout: 60000,
+    maxHttpBufferSize: 1e5,
+    allowUpgrades: false,
   });
 
   // Authentication middleware

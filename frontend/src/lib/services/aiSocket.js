@@ -11,15 +11,22 @@ class AISocketService {
   initialize(token) {
     if (this.isInitialized || !token) return;
 
+    // Use websocket only on production to avoid polling spam
+    const transports = process.env.NODE_ENV === 'production' 
+      ? ["websocket"] 
+      : ["websocket", "polling"];
+
     this.socket = io(process.env.NEXT_PUBLIC_AI_BUDDY_URL, {
       auth: { token },
       withCredentials: true,
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-      transports: ["websocket", "polling"],
-      // Add connection timeout and better error handling
-      reconnectionDelayMax: 5000,
+      reconnectionDelay: 5000,
+      reconnectionAttempts: 3,
+      transports,
+      reconnectionDelayMax: 30000,
+      upgrade: false,
+      enablesXDR: true,
+      path: '/socket.io/',
     });
 
     this.socket.on('connect', () => {

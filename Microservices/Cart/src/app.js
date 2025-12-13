@@ -9,7 +9,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://prodexa-ten.vercel.app"], // Frontend URLs
+    origin: [
+      "http://localhost:5173",
+      "https://prodexa-ten.vercel.app",
+      "https://localhost:3000",
+      process.env.FRONTEND_URL || "http://localhost:5173"
+    ], // Frontend URLs
     credentials: true,
   })
 );
