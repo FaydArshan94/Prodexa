@@ -6,7 +6,7 @@ const { io: Client } = require("socket.io-client");
 
 // Connect to the Cart service socket (port 3002)
 const cartSocket = Client(
-  process.env.CART_SERVICE_URL || "http://localhost:3002",
+  process.env.CART_SERVICE_URL || "https://prodexa-cart.onrender.com",
   {
     reconnection: true,
     transports: ["websocket", "polling"],
@@ -18,7 +18,7 @@ const searchProduct = tool(
     try {
       const response = await axios.get(
         `${
-          process.env.PRODUCT_SERVICE_URL || "http://localhost:3001"
+          process.env.PRODUCT_SERVICE_URL || "https://prodexa-product.onrender.com"
         }/api/products/search`,
         {
           params: { q: query, limit: 5 },
@@ -62,7 +62,7 @@ const addProductToCart = tool(
     try {
       const response = await axios.post(
         `${
-          process.env.CART_SERVICE_URL || "http://localhost:3002"
+          process.env.CART_SERVICE_URL || "https://prodexa-cart.onrender.com"
         }/api/cart/items`,
         { productId, quantity, product },
         { headers: { Authorization: `Bearer ${token}` } }
