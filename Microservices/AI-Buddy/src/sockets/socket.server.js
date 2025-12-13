@@ -15,17 +15,30 @@ async function initSocketServer(httpServer) {
   });
 
   io.use((socket, next) => {
-    const cookies = socket.handshake.headers?.cookie;
-    const { token } = cookies ? cookie.parse(cookies) : {};
-    if (!token) return next(new Error("Token not provided"));
+    // Try to get token from auth object first (socket.io-client sends it here)
+    let token = socket.handshake.auth?.token;
+    
+    // Fall back to cookies if not in auth
+    if (!token) {
+      const cookies = socket.handshake.headers?.cookie;
+      const parsed = cookies ? cookie.parse(cookies) : {};
+      token = parsed.token;
+    }
+    
+    if (!token) {
+      console.error("❌ No token found in handshake");
+      return next(new Error("Token not provided"));
+    }
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.user = decoded;
       socket.token = token;
+      console.log("✅ Token verified for user:", decoded.id);
       next();
-    } catch {
-      next(new Error("Invalid token"));
+    } catch (error) {
+      console.error("❌ Token verification failed:", error.message);
+      next(new Error(`Invalid token: ${error.message}`));
     }
   });
 
@@ -55,7 +68,7 @@ async function initSocketServer(httpServer) {
   });
 
 
-  const cartSocket = Client("http://localhost:3002", {
+  const cartSocket = Client("https://prodexa-cart.onrender.com", {
       transports: ["websocket"],
     });
 

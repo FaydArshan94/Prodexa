@@ -17,10 +17,10 @@ export function AIChatWidget() {
   const { messages, isConnected, isTyping } = useSelector((state) => state.aiChat);
 
   useEffect(() => {
-    if (isOpen && !aiSocketService.isInitialized) {
-      aiSocketService.initialize();
+    if (isOpen && !aiSocketService.isInitialized && auth.token) {
+      aiSocketService.initialize(auth.token);
     }
-  }, [isOpen]);
+  }, [isOpen, auth.token]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -61,7 +61,7 @@ export function AIChatWidget() {
           <div className="p-4 border-b flex justify-between items-center">
             <h3 className="font-semibold">AI Assistant</h3>
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className={`h-4 w-4 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
               <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
                 ×
               </button>

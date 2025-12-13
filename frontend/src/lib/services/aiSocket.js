@@ -17,13 +17,23 @@ class AISocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
+      transports: ["websocket", "polling"],
+      // Add connection timeout and better error handling
+      reconnectionDelayMax: 5000,
     });
 
     this.socket.on('connect', () => {
+      console.log('✅ AI Socket connected');
       store.dispatch(setConnectionStatus(true));
     });
 
     this.socket.on('disconnect', () => {
+      console.log('❌ AI Socket disconnected');
+      store.dispatch(setConnectionStatus(false));
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('🔴 AI Socket connection error:', error?.message || error);
       store.dispatch(setConnectionStatus(false));
     });
 

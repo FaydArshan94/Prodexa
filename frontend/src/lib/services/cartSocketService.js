@@ -11,7 +11,7 @@ class CartSocketService {
   initialize(token) {
     if (this.isInitialized || !token) return;
 
-    this.socket = io("http://localhost:3002", {
+    this.socket = io("https://prodexa-cart.onrender.com", {
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,

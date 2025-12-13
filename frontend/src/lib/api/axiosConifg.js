@@ -8,7 +8,7 @@ export const API_URLS = {
   order: process.env.NEXT_PUBLIC_ORDER_API || 'https://prodexa-order.onrender.com/api/orders',
   payment: process.env.NEXT_PUBLIC_PAYMENT_API || 'https://prodexa-payment.onrender.com/api/payments',
   notification: process.env.NEXT_PUBLIC_NOTIFICATION_API || 'http://localhost:3006',
-  aiBuddy: process.env.NEXT_PUBLIC_AI_BUDDY_API || 'http://localhost:3007',
+  aiBuddy: process.env.NEXT_PUBLIC_AI_BUDDY_API || 'https://prodexa-ai-buddy.onrender.com',
   seller: process.env.NEXT_PUBLIC_SELLER_API || 'https://prodexa-seller-dashboard.onrender.com',
 }
 

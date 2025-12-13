@@ -87,8 +87,7 @@ export default function LoginPage() {
         localStorage.setItem("token", token);
       }
 
-      // After successful login
-      dispatch(loginSuccess({ user, token }));
+      // Initialize socket services after successful login
       cartSocketService.initialize(token);
       aiSocketService.initialize(token);
 

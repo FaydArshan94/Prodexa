@@ -23,7 +23,7 @@ export function SocketProvider({ children }) {
 
     // Connect to cart service
     const newSocket = io(
-      'http://localhost:3002',
+      'https://prodexa-cart.onrender.com',
       {
         auth: {
           token: auth.token
