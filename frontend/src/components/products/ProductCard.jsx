@@ -120,8 +120,9 @@ export default function ProductCard({ product }) {
 
         {/* Add to Cart Button */}
         <Button
+        type="button"
           onClick={(e) => {
-            e.stopPropagation();
+            // e.stopPropagation();
             handleAddToCart(product._id);
           }}
           className="w-full gap-2 hover:bg-blue-600 active:bg-blue-700 transition-colors"

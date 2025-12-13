@@ -421,6 +421,7 @@ export default function ProductDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <Button
+              type="button"
                 onClick={(e) => {
                   // e.stopPropagation();
                   handleAddToCart();
@@ -441,6 +442,7 @@ export default function ProductDetailPage() {
 
             {/* Buy Now Button */}
             <Button
+            type="button"
               onClick={(e) => {
                 // e.stopPropagation();
                 handleBuyNow();
