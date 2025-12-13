@@ -3,7 +3,6 @@ import Script from "next/script";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { AIChatWidget } from "@/components/ui/AIChatWidget";
-import { SocketProvider } from "@/lib/services/socketContext";
 import SocketInitializer from "@/components/SocketInitializer";
 
 const geistSans = Geist({
@@ -31,15 +30,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="antialiased">
         <ReduxProvider>
-          <SocketProvider>
-            <SocketInitializer />
-            {children}
-            <AIChatWidget />
-          </SocketProvider>
+          <SocketInitializer />
+          {children}
+          <AIChatWidget />
         </ReduxProvider>
       </body>
     </html>

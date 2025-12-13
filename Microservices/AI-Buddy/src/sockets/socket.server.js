@@ -10,7 +10,7 @@ async function initSocketServer(httpServer) {
   io = new Server(httpServer, {
     transports: ["websocket"], // 🔒 lock it
     cors: {
-      origin: ["prodexa-ten.vercel.app"],
+      origin: ["https://prodexa-ten.vercel.app"],
       credentials: true,
     },
   });
