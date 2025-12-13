@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Frontend URL
+    origin: ["http://localhost:5173", "https://prodexa-ten.vercel.app"], // Frontend URLs
     credentials: true,
   })
 );

@@ -1,8 +1,18 @@
 const express = require("express");
+const cors = require("cors");
 const { connect } = require("./broker/broker");
 const setListener = require("./broker/listener");
 
 const app = express();
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://prodexa-ten.vercel.app"], // Frontend URLs
+    credentials: true,
+  })
+);
+
+app.use(express.json());
 
 console.log('🚀 Starting Notification Service...');
 console.log('⏰ Timestamp:', new Date().toISOString());
