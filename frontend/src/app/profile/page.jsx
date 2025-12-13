@@ -156,18 +156,18 @@ export default function ProfilePage() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-6 sm:py-8 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Toast Notification */}
         {toast.show && (
           <div
-            className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
+            className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto z-50 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
               toast.type === "success" ? "bg-green-500" : "bg-red-500"
-            } text-white`}
+            } text-white text-sm sm:text-base`}
           >
             {toast.type === "success" ? (
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             )}
             <span className="font-medium">{toast.message}</span>
           </div>
@@ -175,42 +175,42 @@ export default function ProfilePage() {
 
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-8 sm:mb-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
               My Profile
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Manage your account settings and preferences
             </p>
           </div>
 
           {/* Profile Information Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <User className="w-6 h-6 text-blue-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 border border-gray-100 hover:shadow-lg sm:hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-3 mb-6 sm:mb-8">
+              <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1">
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-full flex-shrink-0">
+                  <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
+                <div className="min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                     Personal Information
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     Update your personal details
                   </p>
                 </div>
               </div>
               {!isEditing ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <Link
                     href="/orders"
-                    className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium shadow-sm"
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-all duration-200 font-medium shadow-sm text-sm text-center"
                   >
                     My Orders
                   </Link>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                    className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg text-sm"
                   >
                     Edit Profile
                   </button>
@@ -218,7 +218,7 @@ export default function ProfilePage() {
               ) : (
                 <button
                   onClick={handleCancelEdit}
-                  className="px-6 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 font-medium shadow-md"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 font-medium shadow-md text-sm"
                 >
                   <X className="inline w-4 h-4 mr-1" /> Cancel
                 </button>
@@ -226,14 +226,14 @@ export default function ProfilePage() {
             </div>
 
             <form onSubmit={handleSubmitProfile(onSubmitProfile)}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Username */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                     Username
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                    <User className="absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     <input
                       type="text"
                       {...registerProfile("username", {
@@ -244,7 +244,7 @@ export default function ProfilePage() {
                         },
                       })}
                       disabled={!isEditing}
-                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
                     />
                   </div>
                   {profileErrors.username && (
@@ -256,7 +256,7 @@ export default function ProfilePage() {
 
                 {/* First Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                     First Name
                   </label>
                   <input
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                       required: "First name is required",
                     })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
                   />
                   {profileErrors.firstName && (
                     <p className="text-red-500 text-xs mt-1">
@@ -276,7 +276,7 @@ export default function ProfilePage() {
 
                 {/* Last Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                     Last Name
                   </label>
                   <input
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                       required: "Last name is required",
                     })}
                     disabled={!isEditing}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
                   />
                   {profileErrors.lastName && (
                     <p className="text-red-500 text-xs mt-1">
@@ -296,11 +296,11 @@ export default function ProfilePage() {
 
                 {/* Email */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     <input
                       type="email"
                       {...registerProfile("email", {
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                         },
                       })}
                       disabled={!isEditing}
-                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
                     />
                   </div>
                   {profileErrors.email && (
@@ -326,9 +326,9 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full px-6 py-3.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg"
+                      className="w-full px-4 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg text-sm"
                     >
-                      <Save className="inline w-5 h-5 mr-2" />
+                      <Save className="inline w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       {isLoading ? "Saving Changes..." : "Save Changes"}
                     </button>
                   </div>
@@ -338,21 +338,21 @@ export default function ProfilePage() {
           </div>
 
           {/* Change Password Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Lock className="w-6 h-6 text-purple-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-4 sm:p-6 md:p-8 border border-gray-100 hover:shadow-lg sm:hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-3 mb-6 sm:mb-8">
+              <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1">
+                <div className="p-2 sm:p-3 bg-purple-100 rounded-full flex-shrink-0">
+                  <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">Security</h2>
-                  <p className="text-sm text-gray-500">Manage your password</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Security</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">Manage your password</p>
                 </div>
               </div>
               {!isChangingPassword && (
                 <button
                   onClick={() => setIsChangingPassword(true)}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg text-sm"
                 >
                   Change Password
                 </button>
@@ -361,30 +361,30 @@ export default function ProfilePage() {
 
             {isChangingPassword ? (
               <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   {/* Current Password */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                       Current Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <input
                         type={showPassword.current ? "text" : "password"}
                         {...registerPassword("currentPassword", {
                           required: "Current password is required",
                         })}
-                        className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                        className="w-full pl-10 sm:pl-11 pr-11 sm:pr-12 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility("current")}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-2.5 sm:top-3.5 text-gray-400 hover:text-gray-600"
                       >
                         {showPassword.current ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                         )}
                       </button>
                     </div>
@@ -397,11 +397,11 @@ export default function ProfilePage() {
 
                   {/* New Password */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                       New Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <input
                         type={showPassword.new ? "text" : "password"}
                         {...registerPassword("newPassword", {
@@ -411,17 +411,17 @@ export default function ProfilePage() {
                             message: "Password must be at least 6 characters",
                           },
                         })}
-                        className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                        className="w-full pl-10 sm:pl-11 pr-11 sm:pr-12 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility("new")}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-2.5 sm:top-3.5 text-gray-400 hover:text-gray-600"
                       >
                         {showPassword.new ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                         )}
                       </button>
                     </div>
@@ -437,11 +437,11 @@ export default function ProfilePage() {
 
                   {/* Confirm Password */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                       Confirm New Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <input
                         type={showPassword.confirm ? "text" : "password"}
                         {...registerPassword("confirmPassword", {
@@ -449,17 +449,17 @@ export default function ProfilePage() {
                           validate: (value) =>
                             value === newPassword || "Passwords do not match",
                         })}
-                        className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                        className="w-full pl-10 sm:pl-11 pr-11 sm:pr-12 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility("confirm")}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-2.5 sm:top-3.5 text-gray-400 hover:text-gray-600"
                       >
                         {showPassword.confirm ? (
-                          <EyeOff className="w-5 h-5" />
+                          <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                         )}
                       </button>
                     </div>
@@ -470,19 +470,19 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  <div className="flex gap-3 pt-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="flex-1 px-6 py-3.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg"
+                      className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg text-sm"
                     >
-                      <Save className="inline w-5 h-5 mr-2" />
+                      <Save className="inline w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       {isLoading ? "Updating Password..." : "Update Password"}
                     </button>
                     <button
                       type="button"
                       onClick={handleCancelPassword}
-                      className="px-6 py-3.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 font-medium shadow-md"
+                      className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-3.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 font-medium shadow-md text-sm"
                     >
                       <X className="inline w-4 h-4 mr-1" /> Cancel
                     </button>
@@ -490,8 +490,8 @@ export default function ProfilePage() {
                 </div>
               </form>
             ) : (
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-100">
-                <p className="text-gray-700 text-center">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 sm:p-6 border border-purple-100">
+                <p className="text-gray-700 text-center text-sm sm:text-base">
                   Keep your account secure by regularly updating your password
                 </p>
               </div>
