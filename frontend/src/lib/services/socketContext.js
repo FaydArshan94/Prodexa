@@ -48,7 +48,7 @@ export function SocketProvider({ children }) {
     return () => {
       newSocket.disconnect();
     };
-  }, [auth.token, auth.user]);
+  }, [auth.token, auth.user, socket]);
 
   return (
     <SocketContext.Provider value={socket}>
