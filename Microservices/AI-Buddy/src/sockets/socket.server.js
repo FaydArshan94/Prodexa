@@ -4,11 +4,11 @@ const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
 const agent = require("../agent/agent");
 const { HumanMessage } = require("@langchain/core/messages");
-const { io: Client } = require("socket.io-client");
 let io; // store io globally
 
 async function initSocketServer(httpServer) {
   io = new Server(httpServer, {
+    transports: ["websocket"], // 🔒 lock it
     cors: {
       origin: ["https://prodexa.vercel.app"],
       credentials: true,
@@ -76,22 +76,6 @@ async function initSocketServer(httpServer) {
       }
     });
   });
-
-  const cartSocket = Client("https://prodexa-cart.onrender.com", {
-    transports: ["websocket"],
-  });
-
-  cartSocket.on("connect", () =>
-    console.log("🟢 AI Buddy connected to Cart socket")
-  );
-  cartSocket.on("connect_error", (err) =>
-    console.error("❌ AI-Cart socket error:", err.message)
-  );
-
-  setTimeout(() => {
-    console.log("🟢 AI emitting cart:updated from AI Buddy...");
-    cartSocket.emit("cart:updated", { msg: "From AI Buddy test" });
-  }, 5000);
 }
 
 module.exports = { initSocketServer, io };
