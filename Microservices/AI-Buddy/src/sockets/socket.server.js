@@ -3,6 +3,7 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
 const agent = require("../agent/agent");
+const { HumanMessage } = require("@langchain/core/messages");
 const { io: Client } = require("socket.io-client");
 let io; // store io globally
 
@@ -48,20 +49,28 @@ async function initSocketServer(httpServer) {
     socket.on("user:message", async (data) => {
       console.log("📨 Received AI user message:", data);
 
-      socket.emit("ai:typing", true);
+      try {
+        socket.emit("ai:typing", true);
 
-      const agentResponse = await agent.invoke(
-        {
-          messages: [{ role: "user", content: data }],
-        },
-        { metadata: { token: socket.token } }
-      );
+        const agentResponse = await agent.invoke(
+          {
+            messages: [new HumanMessage({ content: data })],
+          },
+          { metadata: { token: socket.token } }
+        );
 
-      const lastMessage =
-        agentResponse.messages[agentResponse.messages.length - 1];
+        const lastMessage =
+          agentResponse.messages[agentResponse.messages.length - 1];
 
-      socket.emit("ai:message", lastMessage.content);
-      socket.emit("ai:typing", false);
+        console.log("🤖 Agent response:", lastMessage);
+
+        socket.emit("ai:message", lastMessage.content);
+        socket.emit("ai:typing", false);
+      } catch (error) {
+        console.error("❌ Error in agent processing:", error.message);
+        socket.emit("ai:message", `Sorry, I encountered an error: ${error.message}`);
+        socket.emit("ai:typing", false);
+      }
     });
 
     

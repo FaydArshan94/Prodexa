@@ -7,6 +7,7 @@ const tools = require("./tools")
 const model = new ChatGoogleGenerativeAI({
     model: "gemini-2.0-flash",
     temperature: 0.5,
+    apiKey: process.env.GOOGLE_API_KEY,
 })
 
 
@@ -25,11 +26,12 @@ const graph = new StateGraph(MessagesAnnotation)
             }
             const toolInput = call.args
 
-            console.log("Invoking tool:", call.name, "with input:", call)
+            console.log("Invoking tool:", call.name, "with input:", toolInput)
 
-            const toolResult = await tool.func({ ...toolInput, token: config.metadata.token })
+            // LangChain tools have a .invoke method, not .func
+            const toolResult = await tool.invoke({ ...toolInput, token: config.metadata.token })
 
-            return new ToolMessage({ content: toolResult, name: call.name })
+            return new ToolMessage({ content: JSON.stringify(toolResult), name: call.name })
 
         }))
 
@@ -38,12 +40,30 @@ const graph = new StateGraph(MessagesAnnotation)
         return state
     })
     .addNode("chat", async (state, config) => {
-        const response = await model.invoke(state.messages, { tools: [ tools.searchProduct, tools.addProductToCart ] })
+        try {
+            console.log("🔄 Invoking model with messages:", state.messages);
+            
+            const response = await model.invoke(state.messages, { 
+                tools: [ tools.searchProduct, tools.addProductToCart ] 
+            })
 
+            console.log("🤖 Model response:", response);
 
-        state.messages.push(new AIMessage({ content: response.text, tool_calls: response.tool_calls }))
+            // Handle both AI message response and content
+            const content = response.content || response.text || "";
+            const toolCalls = response.tool_calls || [];
 
-        return state
+            if (!content && !toolCalls.length) {
+                console.warn("⚠️ Model returned empty response");
+            }
+
+            state.messages.push(new AIMessage({ content: content, tool_calls: toolCalls }))
+
+            return state
+        } catch (error) {
+            console.error("❌ Model invocation error:", error.message);
+            throw error;
+        }
 
     })
     .addEdge("__start__", "chat")
