@@ -3,13 +3,27 @@ const { ChatGoogleGenerativeAI } = require("@langchain/google-genai")
 const { ToolMessage, AIMessage, HumanMessage } = require("@langchain/core/messages")
 const tools = require("./tools")    
 
+// Aggressive caching for free tier quota management
+const responseCache = new Map();
+const MAX_CACHE_SIZE = 100;
+let requestQueue = [];
+let isProcessing = false;
+const REQUEST_DELAY = 2000; // 2 seconds between requests to avoid rate limit
+
+const getCacheKey = (message) => {
+    if (message && typeof message === 'string') {
+        // Simple hash of the message
+        return `msg_${message.toLowerCase().trim().substring(0, 150)}`;
+    }
+    return null;
+};
 
 const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.0-flash",
+    model: "gemini-1.0-pro", // Using older, more stable model with better free tier support
     temperature: 0.7,
     apiKey: process.env.GOOGLE_API_KEY,
-    timeout: 60000,
-    maxRetries: 2,
+    timeout: 30000,
+    maxRetries: 0, // Disable retries to avoid hitting quota faster
 })
 
 
@@ -67,29 +81,67 @@ const graph = new StateGraph(MessagesAnnotation)
     })
     .addNode("chat", async (state, config) => {
         try {
-            console.log("💬 Invoking model with", state.messages.length, "messages");
+            const lastHumanMsg = state.messages.find(m => m instanceof HumanMessage);
+            const userMessage = lastHumanMsg?.content || "";
+            
+            console.log("💬 Processing:", userMessage.substring(0, 50) + "...");
+            
+            // Check cache FIRST
+            const cacheKey = getCacheKey(userMessage);
+            if (cacheKey && responseCache.has(cacheKey)) {
+                console.log("⚡ Cache HIT - Using saved response");
+                const { content, toolCalls } = responseCache.get(cacheKey);
+                state.messages.push(new AIMessage({ content, tool_calls: toolCalls }));
+                return state;
+            }
+            
+            console.log("❌ Cache MISS - Calling API (limited to 60 calls/day free tier)");
+            
+            // Rate limiting for free tier
+            await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
             
             const response = await model.invoke(state.messages, { 
                 tools: [ tools.searchProduct, tools.addProductToCart ] 
-            })
+            });
 
-            console.log("✅ Model response received");
-
-            // Handle both AI message response and content
-            const content = response.content || response.text || "";
+            const content = response.content || "";
             const toolCalls = response.tool_calls || [];
 
+            console.log("✅ API response received");
             console.log("📝 Content length:", content.length);
             console.log("🔧 Tool calls:", toolCalls.length);
 
-            state.messages.push(new AIMessage({ content: content, tool_calls: toolCalls }))
+            // Cache the response
+            if (cacheKey && responseCache.size < MAX_CACHE_SIZE) {
+                responseCache.set(cacheKey, { content, toolCalls });
+                console.log("💾 Cached for next time");
+            }
 
-            return state
+            state.messages.push(new AIMessage({ content, tool_calls: toolCalls }));
+            return state;
+            
         } catch (error) {
-            console.error("❌ Model invocation error:", error.message, error.cause);
-            throw error;
+            console.error("❌ Error:", error.message);
+            
+            // Quota error handling
+            if (error.message.includes("429") || error.message.includes("quota") || error.message.includes("Quota")) {
+                console.error("⚠️ QUOTA EXCEEDED - Free tier limit reached");
+                const message = "🚫 Free tier quota exceeded (60 requests/day). Please try:\n" +
+                    "1. Add billing to your Google Cloud project for higher limits\n" +
+                    "2. Wait until tomorrow for quota reset\n" +
+                    "3. Create a new Google Cloud project with fresh API key\n" +
+                    "4. Use cached responses for common questions";
+                
+                state.messages.push(new AIMessage({ content: message, tool_calls: [] }));
+                return state;
+            }
+            
+            state.messages.push(new AIMessage({ 
+                content: `Error: ${error.message}`, 
+                tool_calls: [] 
+            }));
+            return state;
         }
-
     })
     .addEdge("__start__", "chat")
     .addConditionalEdges("chat", (state) => {
