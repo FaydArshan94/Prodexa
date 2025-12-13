@@ -9,9 +9,9 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Frontend URL
-    credentials: true,
-  })
+      origin: ["http://localhost:5173", "https://prodexa-tau.vercel.app"], // Frontend URLs
+      credentials: true,
+    })
 );
 
 

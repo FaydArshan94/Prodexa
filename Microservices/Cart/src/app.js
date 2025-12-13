@@ -3,23 +3,14 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const cartRoutes = require("./routes/cart.routes");
 
-
 const app = express();
-
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://prodexa-ten.vercel.app",
-      "https://localhost:3000",
-      process.env.FRONTEND_URL || "http://localhost:5173"
-    ], // Frontend URLs
+    origin: ["http://localhost:5173", "https://prodexa-tau.vercel.app"], // Frontend URLs
     credentials: true,
   })
 );
-
-
 
 app.use(express.json());
 app.use(cookieParser());
