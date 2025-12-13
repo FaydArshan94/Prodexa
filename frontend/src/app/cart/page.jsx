@@ -203,7 +203,13 @@ export default function CartPage() {
                     }
                     className="flex-1"
                   />
-                  <Button onClick={applyCoupon} variant="outline">
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      applyCoupon();
+                    }} 
+                    variant="outline"
+                  >
                     Apply
                   </Button>
                 </div>
@@ -267,8 +273,9 @@ export default function CartPage() {
               {/* Checkout Button */}
               <Link href="/checkout">
                 <Button
+                  onClick={(e) => e.stopPropagation()}
                   size="lg"
-                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
                 >
                   Proceed to Checkout
                   <ArrowRight className="h-5 w-5" />

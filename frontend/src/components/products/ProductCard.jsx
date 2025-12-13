@@ -121,10 +121,10 @@ export default function ProductCard({ product }) {
         {/* Add to Cart Button */}
         <Button
           onClick={(e) => {
-            // e.preventDefault();
+            e.stopPropagation();
             handleAddToCart(product._id);
           }}
-          className="w-full gap-2 hover:bg-blue-600 transition-colors"
+          className="w-full gap-2 hover:bg-blue-600 active:bg-blue-700 transition-colors"
           size="sm"
         >
           <ShoppingCart className="h-4 w-4" />

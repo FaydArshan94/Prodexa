@@ -119,4 +119,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Mobile touch improvements */
+  button, [role="button"], a[href] {
+    @apply touch-manipulation;
+  }
+  
+  /* Ensure buttons are properly clickable on mobile */
+  button, [type="button"], [type="submit"], [type="reset"] {
+    -webkit-appearance: button;
+    -webkit-user-select: none;
+    user-select: none;
+    @apply cursor-pointer;
+  }
+  
+  /* Prevent 300ms tap delay on mobile */
+  button, a, input {
+    @apply active:opacity-80;
+  }
 }

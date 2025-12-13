@@ -421,9 +421,12 @@ export default function ProductDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <Button
-                onClick={handleAddToCart}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart();
+                }}
                 size="lg"
-                className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
+                className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
               >
                 <ShoppingCart className="h-5 w-5" />
                 Add to Cart
@@ -438,9 +441,12 @@ export default function ProductDetailPage() {
 
             {/* Buy Now Button */}
             <Button
-            onClick={handleBuyNow}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBuyNow();
+              }}
               size="lg"
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700"
             >
               Buy Now
             </Button>
