@@ -12,27 +12,28 @@ export default function ProductCard({ product }) {
   const dispatch = useDispatch();
 
   const handleAddToCart = async () => {
-    try {
-      await dispatch(
-        addToCart({
-          productId: product._id,
-          quantity: 1,
-          product: {
-            title: product.title,
-            price: product.price?.amount || product.price,
-            image: product.image || product.images?.[0].url || "/placeholder.jpg",
-            stock: product.stock || 0,
-            discountPrice:
-              product.discountPrice?.amount || product.discountPrice,
-          },
-        })
-      ).unwrap();
+  try {
+    await dispatch(
+      addToCart({
+        productId: product._id,
+        quantity: 1,
+        product: {
+          title: product.title,
+          price: product.price?.amount || product.price,
+          image: product.image || product.images?.[0].url || "/placeholder.jpg",
+          stock: product.stock || 0,
+          discountPrice:
+            product.discountPrice?.amount || product.discountPrice,
+        },
+      })
+    ).unwrap();
 
-    } catch (error) {
-      console.error("Add to cart error:", error);
-      console.log(error || "Failed to add to cart");
-    }
-  };
+    console.log("Added to cart");
+  } catch (error) {
+    console.error("Add to cart error:", error);
+  }
+};
+
   return (
     <Card className="group cursor-pointer hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 hover:border-blue-200">
       <Link href={`/products/${product?._id}`}>

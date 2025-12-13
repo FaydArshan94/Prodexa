@@ -168,61 +168,55 @@ export default function ProductDetailPage() {
   }, [dispatch, id]);
 
   const handleAddToCart = async () => {
-    try {
-      await dispatch(
-        addToCart({
-          productId: params.id,
-          quantity: 1,
-          product: {
-            title: product.title,
-            price: product.price?.amount || product.price,
-            image:
-              product.image || product.images?.[0].url || "/placeholder.jpg",
-            stock: product.stock || 0,
-            discountPrice:
-              product.discountPrice?.amount || product.discountPrice,
-          },
+  try {
+    await dispatch(
+      addToCart({
+        productId: product._id,
+        quantity: 1,
+        product: {
+          title: product.title,
+          price: product.price?.amount || product.price,
+          image: product.image || product.images?.[0].url || "/placeholder.jpg",
+          stock: product.stock || 0,
+          discountPrice:
+            product.discountPrice?.amount || product.discountPrice,
+        },
+      })
+    ).unwrap();
 
-          
-        }),
+    console.log("Added to cart");
+  } catch (error) {
+    console.error("Add to cart error:", error);
+  }
+};
 
-        console.log("Added to cart")
-      ).unwrap();
-    } catch (error) {
-      console.error("Add to cart error:", error);
-      console.log(error || "Failed to add to cart");
-    }
-  };
 
 
   const router = useRouter();
 
   const handleBuyNow = async () => {
-    try {
-      // First add the item to cart
-      await dispatch(
-        addToCart({
-          productId: params.id,
-          quantity: quantity,
-          product: {
-            title: product.title,
-            price: product.price?.amount || product.price,
-            image: product.image || product.images?.[0].url || "/placeholder.jpg",
-            stock: product.stock || 0,
-            discountPrice: product.discountPrice?.amount || product.discountPrice,
-          },
-        })
-      ).unwrap();
-      
-      // Then redirect to checkout
-      router.push('/checkout');
+  try {
+    await dispatch(
+      addToCart({
+        productId: product._id,
+        quantity: quantity || 1,
+        product: {
+          title: product.title,
+          price: product.price?.amount || product.price,
+          image: product.image || product.images?.[0].url || "/placeholder.jpg",
+          stock: product.stock || 0,
+          discountPrice:
+            product.discountPrice?.amount || product.discountPrice,
+        },
+      })
+    ).unwrap();
 
-      console.log("Added to cart");
-    } catch (error) {
-      console.error("Add to cart error:", error);
-      console.log(error || "Failed to add to cart");
-    }
-  };
+    router.push("/checkout");
+  } catch (error) {
+    console.error("Buy now error:", error);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-slate-50">
