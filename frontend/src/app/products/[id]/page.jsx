@@ -266,7 +266,7 @@ export default function ProductDetailPage() {
                   {product.images && product.images.length > 0 ? (
                     product.images.map((image, index) => (
                       <CarouselItem key={index}>
-                        <div className="p-1 h-full w-full flex  items-center justify-center">
+                        <div className="p-1 h-full w-full flex pointer-events-none md:pointer-events-auto items-center justify-center">
                           {/* Always render ImageEffect for ALL images */}
                           <ImageEffect
                             src={image.url}
@@ -277,7 +277,7 @@ export default function ProductDetailPage() {
                     ))
                   ) : (
                     <CarouselItem>
-                      <div className="flex items-center justify-center h-full">
+                      <div className="flex items-center pointer-events-none md:pointer-events-auto justify-center h-full">
                         <div className="text-8xl">{product.title}</div>
                       </div>
                     </CarouselItem>
@@ -422,7 +422,7 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <Button
                 onClick={(e) => {
-                  e.stopPropagation();
+                  // e.stopPropagation();
                   handleAddToCart();
                 }}
                 size="lg"
@@ -442,7 +442,7 @@ export default function ProductDetailPage() {
             {/* Buy Now Button */}
             <Button
               onClick={(e) => {
-                e.stopPropagation();
+                // e.stopPropagation();
                 handleBuyNow();
               }}
               size="lg"
