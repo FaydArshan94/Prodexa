@@ -81,7 +81,7 @@ export default function LoginPage() {
 
       const token = result?.token;
 
-      console.log(token);
+      // console.log(token);
 
       if (token) {
         localStorage.setItem("token", token);

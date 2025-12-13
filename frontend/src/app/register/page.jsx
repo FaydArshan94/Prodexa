@@ -81,6 +81,14 @@ export default function RegisterPage() {
 
     try {
       await dispatch(registerUser(data)).unwrap();
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      cartSocketService.initialize(token);
+      aiSocketService.initialize(token);
+
       router.push("/login");
     } catch (err) {
       console.error("Registration failed:", err);
@@ -271,7 +279,6 @@ export default function RegisterPage() {
 
               {/* Register Button */}
               <Button
-                
                 type="submit"
                 size="lg"
                 disabled={isLoading}
