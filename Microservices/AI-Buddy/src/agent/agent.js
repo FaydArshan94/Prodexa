@@ -19,7 +19,7 @@ const getCacheKey = (message) => {
 };
 
 const model = new ChatGoogleGenerativeAI({
-    model: "gemini-1.0-pro", // Using older, more stable model with better free tier support
+    model: "gemini-2.0-flash", // Using older, more stable model with better free tier support
     temperature: 0.7,
     apiKey: process.env.GOOGLE_API_KEY,
     timeout: 30000,
