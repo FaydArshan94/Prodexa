@@ -302,7 +302,7 @@ export default function ProductDetailPage() {
                   <Card
                     key={idx}
                     onClick={() => handleThumbnailClick(idx)}
-                    className={`aspect-auto flex items-center justify-center cursor-pointer hover:border-blue-500 transition-all ${
+                    className={`aspect-auto flex items-center justify-center pointer-events-none md:pointer-events-auto cursor-pointer hover:border-blue-500 transition-all ${
                       selectedImage === idx ? "border-2 border-blue-500" : ""
                     }`}
                   >
