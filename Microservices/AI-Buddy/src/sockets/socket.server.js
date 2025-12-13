@@ -10,7 +10,7 @@ let io; // store io globally
 async function initSocketServer(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      origin: ["https://prodexa.vercel.app"],
       credentials: true,
     },
   });
@@ -18,14 +18,14 @@ async function initSocketServer(httpServer) {
   io.use((socket, next) => {
     // Try to get token from auth object first (socket.io-client sends it here)
     let token = socket.handshake.auth?.token;
-    
+
     // Fall back to cookies if not in auth
     if (!token) {
       const cookies = socket.handshake.headers?.cookie;
       const parsed = cookies ? cookie.parse(cookies) : {};
       token = parsed.token;
     }
-    
+
     if (!token) {
       console.error("❌ No token found in handshake");
       return next(new Error("Token not provided"));
@@ -68,30 +68,30 @@ async function initSocketServer(httpServer) {
         socket.emit("ai:typing", false);
       } catch (error) {
         console.error("❌ Error in agent processing:", error.message);
-        socket.emit("ai:message", `Sorry, I encountered an error: ${error.message}`);
+        socket.emit(
+          "ai:message",
+          `Sorry, I encountered an error: ${error.message}`
+        );
         socket.emit("ai:typing", false);
       }
     });
-
-    
   });
 
-
   const cartSocket = Client("https://prodexa-cart.onrender.com", {
-      transports: ["websocket"],
-    });
+    transports: ["websocket"],
+  });
 
-    cartSocket.on("connect", () =>
-      console.log("🟢 AI Buddy connected to Cart socket")
-    );
-    cartSocket.on("connect_error", (err) =>
-      console.error("❌ AI-Cart socket error:", err.message)
-    );
+  cartSocket.on("connect", () =>
+    console.log("🟢 AI Buddy connected to Cart socket")
+  );
+  cartSocket.on("connect_error", (err) =>
+    console.error("❌ AI-Cart socket error:", err.message)
+  );
 
-    setTimeout(() => {
-      console.log("🟢 AI emitting cart:updated from AI Buddy...");
-      cartSocket.emit("cart:updated", { msg: "From AI Buddy test" });
-    }, 5000);
+  setTimeout(() => {
+    console.log("🟢 AI emitting cart:updated from AI Buddy...");
+    cartSocket.emit("cart:updated", { msg: "From AI Buddy test" });
+  }, 5000);
 }
 
 module.exports = { initSocketServer, io };

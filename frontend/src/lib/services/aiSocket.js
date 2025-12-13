@@ -9,7 +9,7 @@ class AISocketService {
   }
 
   initialize(token) {
-    if (this.isInitialized || !token) return;
+   if (this.socket || !token) return;
 
     // Use websocket only on production to avoid polling spam
     const transports = process.env.NODE_ENV === 'production' 
