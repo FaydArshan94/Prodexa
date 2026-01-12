@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'My App',
-  description: 'Welcome to my app',
+  title: 'Prodexa - Your Ultimate Shopping Hub',
+  description: 'Welcome to Prodexa - Your Ultimate Shopping Hub!',
   // other metadata properties like openGraph, twitter, etc.
 };
 
